@@ -1,0 +1,91 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij.platform'
+}
+
+group 'cn.xeblog'
+version '2.0.0-beta'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+ext {
+    xechatCommonsVersion = '1.6.7-beta'
+    lombokVersion = '1.18.34'
+    jxBrowserVersion = '7.22'
+    gsonVersion = '2.13.2'
+    junitVersion = '4.13.2'
+    hutoolVersion = '5.8.32'
+}
+
+repositories {
+    maven {
+        url 'file:///E:/maven/repository'
+    }
+    maven {
+        url 'https://maven.aliyun.com/nexus/content/groups/public/'
+    }
+    mavenLocal()
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity('2025.2')
+        bundledPlugins(['com.intellij.java'])
+    }
+
+    testImplementation "junit:junit:$junitVersion"
+
+    // xechat-commons：共享协议/实体，插件代码直接引用 Game/Action/User 等类，必须打包
+    implementation "cn.xeblog:xechat-commons:$xechatCommonsVersion"
+
+    // JxBrowser：compileOnly，运行时从 CDN 动态下载到插件目录加载
+    compileOnly "com.teamdev.jxbrowser:jxbrowser:$jxBrowserVersion"
+    compileOnly "com.teamdev.jxbrowser:jxbrowser-swing:$jxBrowserVersion"
+    compileOnly "com.teamdev.jxbrowser:jxbrowser-win64:$jxBrowserVersion"
+    compileOnly "com.teamdev.jxbrowser:jxbrowser-linux64:$jxBrowserVersion"
+    compileOnly "com.teamdev.jxbrowser:jxbrowser-mac:$jxBrowserVersion"
+
+    implementation "com.google.code.gson:gson:$gsonVersion"
+    implementation "cn.hutool:hutool-all:$hutoolVersion"
+
+    compileOnly "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+    testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+    testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+}
+
+intellijPlatform {
+    buildSearchableOptions = false
+
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = '252'
+            untilBuild = '252.*'
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// 将 Vue 打包产物复制到插件资源目录
+task copyWebDist(type: Copy) {
+    from "${projectDir}/../web/dist"
+    into "${projectDir}/src/main/resources/web"
+    dependsOn ':web:build'
+}
+
+// 排除 JxBrowser JAR 不打包进插件分发
+prepareSandbox {
+    from("${projectDir}/../web/dist") {
+        into "${project.name}/web"
+    }
+}

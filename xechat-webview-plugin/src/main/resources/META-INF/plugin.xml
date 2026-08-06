@@ -1,0 +1,49 @@
+<idea-plugin>
+    <id>cn.xeblog.xechat.webview.plugin</id>
+    <name>XEChat WebView</name>
+    <vendor email="1090172196@qq.com" url="https://xeblog.cn">AnLingYi</vendor>
+
+    <description>
+        <![CDATA[
+            <p>Enjoy the fun of instant chatting in IDEA! WebView edition.</p>
+
+            <p>Main features:</p>
+            <ul>
+                <li>1. Instant chatting</li>
+                <li>2. Online game battles</li>
+                <li>3. Reading novels</li>
+                <li>4. Watching videos through browser, including bilibili and douyin</li>
+                <li>5. Automatically switch background images</li>
+                <li>6. Modern Vue-based UI</li>
+                <li>7. More to explore...</li>
+            </ul>
+
+            <p>Powered by JCEF + Vue 3（视频播放按需加载 JxBrowser）</p>
+    ]]>
+    </description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="XEChat" anchor="bottom" secondary="true" doNotActivateOnStart="true"
+                    canCloseContents="true"
+                    factoryClass="cn.xeblog.plugin.factory.MainWindowFactory" icon="/images/logo.svg"/>
+        <notificationGroup id="cn.xeblog.xechat.webview.notify"
+                           displayType="BALLOON"
+                           key="xechat-webview"/>
+        <applicationConfigurable parentId="tools" instance="cn.xeblog.plugin.setting.PluginConfigSetting"
+                                 id="cn.xeblog.xechat.webview.setting" displayName="XEChat WebView"/>
+        <statusBarWidgetFactory implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="cn.xeblog.plugin.listener.ProjectEventListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </projectListeners>
+
+    <application-components>
+        <component>
+            <implementation-class>cn.xeblog.plugin.persistence.PersistenceService</implementation-class>
+        </component>
+    </application-components>
+</idea-plugin>
