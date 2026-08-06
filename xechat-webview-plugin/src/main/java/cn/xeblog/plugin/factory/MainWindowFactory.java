@@ -8,18 +8,20 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.File;
 import java.net.URL;
 
 /**
  * WebView 版 ToolWindow 工厂。
- * 主面板使用 IDEA 内置 JCEF（无需下载），视频工具 BROWSER2 按需加载 JxBrowser。
+ * JCEF 直接加载 classpath 下 Vite 打包的 index.html。
+ * 视频工具 BROWSER2 按需加载 JxBrowser。
  *
  * @author anlingyi
  */
+@Slf4j
 public class MainWindowFactory implements ToolWindowFactory {
 
     @Override
@@ -31,14 +33,18 @@ public class MainWindowFactory implements ToolWindowFactory {
         Content content = contentFactory.createContent(container, "", false);
         toolWindow.getContentManager().addContent(content);
 
-        // 将 classpath 资源 URL 转为 CEF 兼容的 file:/// 格式
         URL resource = getClass().getResource("/web/index.html");
-        String webUrl = "about:blank";
-        if (resource != null) {
+        String webUrl;
+        if (resource == null) {
+            log.error("资源 /web/index.html 未找到，请确认前端已构建");
+            webUrl = "about:blank";
+        } else {
             try {
-                webUrl = new File(resource.toURI()).toURI().toString();
+                webUrl = resource.toURI().toString();
+                log.info("加载前端页面: {}", webUrl);
             } catch (Exception e) {
-                webUrl = resource.toString();
+                log.error("URL 转换失败", e);
+                webUrl = "about:blank";
             }
         }
 

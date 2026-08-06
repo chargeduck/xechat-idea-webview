@@ -26,3 +26,4 @@ replay_pid*
 /.gradle/
 /.intellijPlatform/
 /xechat-webview-plugin/build/
+/frontend/node_modules/
