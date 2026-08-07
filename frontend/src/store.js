@@ -1,4 +1,5 @@
 import { reactive, nextTick } from 'vue'
+import { on, getMode } from './api.js'
 
 export const state = reactive({
     online: false,
@@ -46,8 +47,8 @@ export function setChatStoreBridge(store) {
 }
 
 console.log('[store.js] 脚本加载，准备注册 console 监听器')
-window.xechat.on('console', (msgs) => {
-    console.log('[store.js] xechat:console 回调触发, count=' + msgs.length)
+on('console', (msgs) => {
+    console.log('[store.js] console 回调触发, count=' + msgs.length)
 
     // 写入 Pinia chatStore（若已桥接）；未就绪时先缓存，setChatStoreBridge 时自动排空
     if (_chatStoreBridge) {
@@ -71,32 +72,32 @@ window.xechat.on('console', (msgs) => {
     })
 })
 
-window.xechat.on('toolOpen', () => {
+on('toolOpen', () => {
     state.toolOpen = true
     refreshState()
 })
-window.xechat.on('toolClose', () => {
+on('toolClose', () => {
     state.toolOpen = false
     refreshState()
 })
-window.xechat.on('gameStart', (data) => {
+on('gameStart', (data) => {
     state.gamePlaying = true
     state.currentGameIndex = data.gameIndex
     navigate('game')
 })
-window.xechat.on('gameOver', () => {
+on('gameOver', () => {
     state.gamePlaying = false
     state.currentGameIndex = -1
     resetRoomState()
     navigate('chat')
 })
-window.xechat.on('gameState', (data) => {
+on('gameState', (data) => {
     state.gameStateData = data
 })
-window.xechat.on('gameRoom', (data) => {
+on('gameRoom', (data) => {
     handleRoomEvent(data)
 })
-window.xechat.on('message', (data) => {
+on('message', (data) => {
     if (_chatStoreBridge) {
         _chatStoreBridge.addMessage(data.text, 'system')
     }

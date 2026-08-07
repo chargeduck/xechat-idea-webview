@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.ConsoleTable;
 import cn.hutool.core.thread.GlobalThreadPool;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
 import cn.xeblog.commons.entity.OnlineServer;
 import cn.xeblog.commons.util.ParamsUtils;
 import cn.xeblog.commons.util.ServerUtils;
@@ -50,6 +52,12 @@ public class ShowServerCommandHandler extends AbstractCommandHandler {
             GlobalThreadPool.execute(() -> {
                 try {
                     DataCache.serverList = ServerUtils.getServerList();
+                    String url = "https://gitee.com/chargeduck/xechat-idea/raw/main/server_list.json";
+                    String resp = HttpRequest.get(url)
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36")
+                            .execute()
+                            .body();
+                    log.info("server list resp: {}", resp);
                     log.info("server list:{}", DataCache.serverList);
                     showServerList();
                 } catch (Exception e) {
