@@ -8,6 +8,7 @@ import cn.xeblog.plugin.mode.ModeContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * WebView 版控制台操作类。
@@ -15,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author anlingyi
  */
+@Slf4j
 public class ConsoleAction implements MainWindowInitializedEventListener {
 
     private static final ReentrantLock LOCK = new ReentrantLock();
@@ -50,8 +52,7 @@ public class ConsoleAction implements MainWindowInitializedEventListener {
         try {
             List<String> result = new ArrayList<>(messageBuffer);
             if (!result.isEmpty()) {
-                org.slf4j.LoggerFactory.getLogger(ConsoleAction.class)
-                        .info("[ConsoleAction] drainMessages: {} 条消息", result.size());
+                log.info("[ConsoleAction] drainMessages: {} 条消息", result.size());
             }
             messageBuffer.clear();
             return result;

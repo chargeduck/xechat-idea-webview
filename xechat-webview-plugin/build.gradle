@@ -43,7 +43,13 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
 
     // xechat-commons：共享协议/实体，插件代码直接引用 Game/Action/User 等类，必须打包
-    implementation "cn.xeblog:xechat-commons:$xechatCommonsVersion"
+    // 排除日志传递依赖，避免与 IDEA 自带的 slf4j-reload4j 冲突
+    implementation("cn.xeblog:xechat-commons:$xechatCommonsVersion") {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'ch.qos.reload4j', module: 'reload4j'
+    }
 
     // JxBrowser：compileOnly，运行时从 CDN 动态下载到插件目录加载
     compileOnly "com.teamdev.jxbrowser:jxbrowser:$jxBrowserVersion"
@@ -53,7 +59,12 @@ dependencies {
     compileOnly "com.teamdev.jxbrowser:jxbrowser-mac:$jxBrowserVersion"
 
     implementation "com.google.code.gson:gson:$gsonVersion"
-    implementation "cn.hutool:hutool-all:$hutoolVersion"
+    implementation("cn.hutool:hutool-all:$hutoolVersion") {
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'ch.qos.reload4j', module: 'reload4j'
+    }
 
     compileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"

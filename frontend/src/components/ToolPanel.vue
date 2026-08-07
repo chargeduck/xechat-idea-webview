@@ -2,6 +2,12 @@
   <div class="tool-panel">
     <div class="panel-header">工具</div>
     <div class="tool-grid">
+      <!-- 静态工具：文字样式管理 -->
+      <div class="tool-card static-tool" @click="openStyleEditor">
+        <div class="tool-icon">S</div>
+        <div class="tool-name">文字样式管理</div>
+        <div class="tool-desc">自定义发送文字的颜色、渐变、发光等特效</div>
+      </div>
       <div
         v-for="(tool, idx) in state.tools"
         :key="idx"
@@ -26,6 +32,10 @@ onMounted(() => loadTools())
 
 function openTool(idx) {
   window.xechat && window.xechat.openTool(idx)
+}
+
+function openStyleEditor() {
+  state.currentRoute = 'style-editor'
 }
 </script>
 

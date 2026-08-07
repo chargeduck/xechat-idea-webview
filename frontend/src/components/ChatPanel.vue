@@ -11,18 +11,18 @@
 
     <!-- 底部：命令行输入区域 -->
     <div class="input-area">
-      <el-input
-        ref="inputRef"
-        v-model="inputText"
-        placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行"
-        type="textarea"
-        :autosize="{ minRows: 1, maxRows: 4 }"
-        @keydown.enter="onEnter"
-      >
-        <template #prefix>
-          <span class="cmd-prefix">#</span>
-        </template>
-      </el-input>
+      <div class="input-row">
+        <StyleSelector @select="onStyleSelect" />
+        <el-input
+          ref="inputRef"
+          v-model="inputText"
+          placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行"
+          type="textarea"
+          :autosize="{ minRows: 1, maxRows: 4 }"
+          @keydown.enter="onEnter"
+          class="chat-input"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +34,7 @@ import { useHelpStore } from '../stores/helpStore'
 import { setChatStoreBridge } from '../store.js'
 import { getMode } from '../api.js'
 import MarkdownMessage from './MarkdownMessage.vue'
+import StyleSelector from './StyleSelector.vue'
 
 const chatStore = useChatStore()
 const helpStore = useHelpStore()
@@ -50,6 +51,17 @@ watch(() => chatStore.messages.length, (newLen, oldLen) => {
     if (el) el.scrollTop = el.scrollHeight
   })
 })
+
+// 文字样式选中：将当前输入文本包裹为样式标签
+function onStyleSelect(tag) {
+  const text = inputText.value.trim()
+  if (!text) {
+    inputRef.value?.focus()
+    return
+  }
+  inputText.value = tag.replace('{text}', text)
+  inputRef.value?.focus()
+}
 
 // 发送逻辑
 function send() {
@@ -133,9 +145,13 @@ onMounted(() => {
   background: var(--bg-secondary);
 }
 
-.cmd-prefix {
-  color: var(--text-muted);
-  font-size: 14px;
-  user-select: none;
+.input-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.input-row .chat-input {
+  flex: 1;
 }
 </style>

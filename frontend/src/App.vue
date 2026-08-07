@@ -44,6 +44,7 @@
       <ToolPanel v-else-if="currentRoute === 'tools'" />
       <GamePanel v-else-if="currentRoute === 'games'" />
       <RoomPanel v-else-if="currentRoute === 'room'" />
+      <StyleEditor v-else-if="currentRoute === 'style-editor'" />
 
       <SettingsDialog v-model="state.settingsOpen" />
     </el-main>
@@ -58,6 +59,7 @@ import ChatPanel from './components/ChatPanel.vue'
 import ToolPanel from './components/ToolPanel.vue'
 import GamePanel from './components/GamePanel.vue'
 import RoomPanel from './components/RoomPanel.vue'
+import StyleEditor from './components/StyleEditor.vue'
 import SettingsDialog from './components/SettingsDialog.vue'
 
 const currentRoute = computed(() => state.currentRoute)

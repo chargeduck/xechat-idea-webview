@@ -18,11 +18,11 @@ public class HelpCommandHandler extends AbstractCommandHandler {
     public void process(String[] args) {
         log.info("[HelpCommandHandler] process 开始执行");
         var sb = new StringBuilder();
-        sb.append("**远程命令**").append(Command.COMMAND_PREFIX).append("\n\n");
+        sb.append("**远程命令<br/>**");
         sb.append("| 命令 | 说明 |\n");
         sb.append("|------|------|\n");
         for (Command command : Command.values()) {
-            sb.append("| **").append(Command.COMMAND_PREFIX).append(command.getCommand())
+            sb.append("| **").append(command.getCommand())
                     .append("** | ").append(command.getDesc()).append(" |\n");
         }
         sb.append("\n> *Tips*: `{ }` 必填参数，`[ ]` 可选参数，参数以空格分隔。\n");
@@ -32,8 +32,7 @@ public class HelpCommandHandler extends AbstractCommandHandler {
         ConsoleAction.atomicExec(() -> {
             ConsoleAction.renderText(sb.toString());
         });
-        org.slf4j.LoggerFactory.getLogger(HelpCommandHandler.class)
-                .info("[HelpCommandHandler] process 执行完毕, buffer size=" + ConsoleAction.getBufferSize());
+        log.info("[HelpCommandHandler] process 执行完毕, buffer size=" + ConsoleAction.getBufferSize());
     }
 
     @Override

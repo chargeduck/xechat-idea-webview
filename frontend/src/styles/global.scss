@@ -113,6 +113,31 @@ button {
   text-align: left;
 }
 
+// VitePress 风格提示块
+.admonition {
+  margin: 12px 0;
+  padding: 8px 16px 8px 14px;
+  border-left: 4px solid;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  .admonition-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  &.info {
+    border-color: var(--accent-color);
+    .admonition-title { color: var(--accent-color); }
+  }
+  &.warn {
+    border-color: var(--warning-color);
+    .admonition-title { color: var(--warning-color); }
+  }
+  &.error {
+    border-color: var(--danger-color);
+    .admonition-title { color: var(--danger-color); }
+  }
+}
+
 .el-message {
   z-index: 99999 !important;
 }
