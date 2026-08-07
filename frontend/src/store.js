@@ -35,14 +35,28 @@ if (!window.xechat) {
         on() {},
         getState() { return '{}' },
         getTools() { return '[]' },
-        getGameList() { return '[]' }
+        getGameList() { return '[]' },
+        execCommand(cmd) { console.log('[xechat mock] execCommand: ' + cmd) },
+        sendMessage(msg) { console.log('[xechat mock] sendMessage: ' + msg) },
+        ready() { console.log('[xechat mock] ready') }
     }
 }
 
 // ---- 消息处理 ----
+// 桥接器：set 后同时写入 Pinia chatStore
+export let _chatStoreBridge = null
+export function setChatStoreBridge(store) { _chatStoreBridge = store }
+
 console.log('[store.js] 脚本加载，准备注册 console 监听器')
 window.xechat.on('console', (msgs) => {
     console.log('[store.js] xechat:console 回调触发, count=' + msgs.length)
+
+    // 写入 Pinia chatStore（若已桥接）
+    if (_chatStoreBridge) {
+        _chatStoreBridge.addMessages(msgs)
+    }
+
+    // 兼容旧 state.messages（其他组件可能引用）
     msgs.forEach(function (m) {
         console.log('[store.js] 追加消息: ' + (typeof m === 'string' ? m.substring(0, 80) : JSON.stringify(m).substring(0, 80)))
         state.messages.push({ text: m, time: new Date().toLocaleTimeString() })
@@ -82,6 +96,9 @@ window.xechat.on('gameRoom', (data) => {
     handleRoomEvent(data)
 })
 window.xechat.on('message', (data) => {
+    if (_chatStoreBridge) {
+        _chatStoreBridge.addMessage(data.text, 'system')
+    }
     state.messages.push({ text: data.text, time: new Date().toLocaleTimeString(), type: 'system' })
     nextTick(() => {
         const el = document.querySelector('.message-list')

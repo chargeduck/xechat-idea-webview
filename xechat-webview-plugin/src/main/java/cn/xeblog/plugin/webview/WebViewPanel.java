@@ -72,13 +72,14 @@ public class WebViewPanel extends JPanel {
                 revalidate();
                 repaint();
 
-                // JS Bridge 延迟注册：等页面加载完成后再注入
                 jsBridge = new JSBridge(this);
 
-                // 页面加载完成后自动注册 JS Bridge
                 JBCefClient client = browser.getJBCefClient();
                 CefBrowser cefBrowser = browser.getCefBrowser();
                 if (cefBrowser != null) {
+                    // CefMessageRouter 必须在 loadURL 前注册，否则渲染进程不会创建 window.cefQuery
+                    jsBridge.setupMessageRouter();
+
                     client.addLoadHandler(new CefLoadHandlerAdapter() {
                         @Override
                         public void onLoadEnd(CefBrowser cb, CefFrame frame, int httpStatusCode) {

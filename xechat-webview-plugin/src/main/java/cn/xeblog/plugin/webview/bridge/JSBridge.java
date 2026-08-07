@@ -10,9 +10,12 @@ import cn.xeblog.commons.enums.Action;
 import cn.xeblog.plugin.webview.WebViewPanel;
 import cn.xeblog.plugin.webview.VideoPlayerPanel;
 import com.google.gson.Gson;
-import com.intellij.ui.jcef.JBCefBrowserBase;
-import com.intellij.ui.jcef.JBCefJSQuery;
 import lombok.AllArgsConstructor;
+import org.cef.browser.CefBrowser;
+import org.cef.browser.CefFrame;
+import org.cef.browser.CefMessageRouter;
+import org.cef.callback.CefQueryCallback;
+import org.cef.handler.CefMessageRouterHandlerAdapter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +59,28 @@ public class JSBridge {
     }
 
     /**
-     * 页面加载完成后调用，注册 JS Bridge 并注入 window.xechat。
+     * 在 loadURL() 之前调用，注册 CefMessageRouter 到 CEF 客户端。
+     * 必须在渲染进程启动前注册，window.cefQuery 才会在页面加载时自动就绪。
+     */
+    public void setupMessageRouter() {
+        CefMessageRouter.CefMessageRouterConfig routerConfig =
+            new CefMessageRouter.CefMessageRouterConfig("cefQuery", "cefQueryCancel");
+        CefMessageRouter messageRouter = CefMessageRouter.create(routerConfig);
+        messageRouter.addHandler(new CefMessageRouterHandlerAdapter() {
+            @Override
+            public boolean onQuery(CefBrowser browser, CefFrame frame, long queryId,
+                                   String request, boolean persistent, CefQueryCallback callback) {
+                handleQuery(request, callback);
+                return true;
+            }
+        }, true);
+
+        panel.getBrowser().getJBCefClient().getCefClient().addMessageRouter(messageRouter);
+        log.info("[JSBridge] CefMessageRouter 已注册（loadURL 前）");
+    }
+
+    /**
+     * 页面加载完成后调用，注入桥接 JS 并启动消息轮询。
      */
     public void register() {
         if (registered) return;
@@ -66,12 +90,8 @@ public class JSBridge {
             // 刷新缓存数据
             refreshCache();
 
-            // 创建 JS→Java 查询处理器
-            JBCefJSQuery query = JBCefJSQuery.create((JBCefBrowserBase) panel.getBrowser());
-            query.addHandler((Function<String, JBCefJSQuery.Response>) this::handleQuery);
-
-            // 注入桥接 JS（包含 window.xechat 和 cefQuery 封装）
-            String bridgeJs = buildInjectionJS(query);
+            // 注入桥接 JS。CefMessageRouter 已在 loadURL 前注册，cefQuery 页面加载即就绪。
+            String bridgeJs = buildInjectionJS();
             panel.executeJS(bridgeJs);
             log.info("[JSBridge] 桥接 JS 已注入");
 
@@ -106,7 +126,7 @@ public class JSBridge {
      * 构建注入到页面的 JS 代码。
      * window.xechat API 保持与旧 JxBrowser @JsAccessible 版本完全一致。
      */
-    private String buildInjectionJS(JBCefJSQuery query) {
+    private String buildInjectionJS() {
         String stateJson = escapeForJS(cachedState);
         String configJson = escapeForJS(cachedConfig);
         String toolsJson = escapeForJS(cachedTools);
@@ -123,8 +143,18 @@ public class JSBridge {
             "var __readConfig=" + readJson + ";" +
             "var __isPlaying=" + isPlaying + ";" +
 
-            // cefQuery 封装
-            "function _call(m,a,cb){var r=JSON.stringify({method:m,args:a||[]});" +
+            // cefQuery 封装（带重试队列，cefQuery 未就绪时排队延迟发送，不再静默丢弃）
+            "var __pendingCalls=[];" +
+            "function _tryFlush(){" +
+                "if(typeof window.cefQuery!=='function'){setTimeout(_tryFlush,50);return;}" +
+                "var pending=__pendingCalls.splice(0);" +
+                "for(var i=0;i<pending.length;i++){" +
+                    "var pc=pending[i];" +
+                    "_makeCall(pc.m,pc.a,pc.cb);" +
+                "}" +
+            "}" +
+            "function _makeCall(m,a,cb){" +
+                "var r=JSON.stringify({method:m,args:a||[]});" +
                 "window.cefQuery({request:r," +
                     "onSuccess:function(resp){" +
                         "try{var d=JSON.parse(resp);" +
@@ -136,6 +166,15 @@ public class JSBridge {
                     "," +
                     "onFailure:function(){}" +
                 "});" +
+            "}" +
+            "function _call(m,a,cb){" +
+                "if(typeof window.cefQuery!=='function'){" +
+                    "console.error('[JSBridge] cefQuery 未就绪，调用入队: '+m);" +
+                    "__pendingCalls.push({m:m,a:a,cb:cb});" +
+                    "if(__pendingCalls.length===1){setTimeout(_tryFlush,50);}" +
+                    "return;" +
+                "}" +
+                "_makeCall(m,a,cb);" +
             "}" +
 
             // 增量注入 window.xechat API（保留 api.js 已有属性如 on/off）
@@ -190,6 +229,7 @@ public class JSBridge {
                     "if(data.isPlaying!==undefined)__isPlaying=data.isPlaying;" +
                 "};" +
             "window.xechat=_x;" +
+            "console.log('[JSBridge] 注入完成, cefQuery='+(typeof window.cefQuery)+', xechat keys='+Object.keys(_x).join(','));" +
 
             "})();";
     }
@@ -197,7 +237,7 @@ public class JSBridge {
     /**
      * 处理前端通过 cefQuery 发来的调用
      */
-    private JBCefJSQuery.Response handleQuery(String data) {
+    private void handleQuery(String data, CefQueryCallback callback) {
         try {
             JsCall call = gson.fromJson(data, JsCall.class);
             String method = call.method;
@@ -211,11 +251,12 @@ public class JSBridge {
                 }
             });
 
+            callback.success("ok");
+
         } catch (Exception e) {
             log.error("解析 JS 调用失败", e);
+            callback.failure(400, "Invalid request: " + e.getMessage());
         }
-
-        return new JBCefJSQuery.Response("ok");
     }
 
     /**

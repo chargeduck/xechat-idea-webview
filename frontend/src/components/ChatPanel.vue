@@ -1,11 +1,10 @@
 <template>
   <div class="chat-panel">
-    <!-- 上方：Markdown 实时预览消息展示区 -->
     <div class="message-list" ref="messageListRef">
-      <div v-for="(msg, idx) in state.messages" :key="idx" class="message-item">
+      <div v-for="(msg, idx) in chatStore.messages" :key="idx" class="message-item">
         <MarkdownMessage :content="msg.text" />
       </div>
-      <div v-if="state.messages.length === 0" class="empty-hint">
+      <div v-if="chatStore.isEmpty" class="empty-hint">
         暂无消息
       </div>
     </div>
@@ -30,15 +29,20 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
-import { state } from '../store.js'
+import { useChatStore } from '../stores/chatStore'
+import { useHelpStore } from '../stores/helpStore'
+import { setChatStoreBridge } from '../store.js'
 import MarkdownMessage from './MarkdownMessage.vue'
+
+const chatStore = useChatStore()
+const helpStore = useHelpStore()
 
 const messageListRef = ref(null)
 const inputRef = ref(null)
 const inputText = ref('')
 
 // 消息列表自动滚动到底部
-watch(() => state.messages.length, (newLen, oldLen) => {
+watch(() => chatStore.messages.length, (newLen, oldLen) => {
   console.log('[ChatPanel] messages.length 变化: ' + oldLen + ' -> ' + newLen)
   nextTick(() => {
     const el = messageListRef.value
@@ -51,10 +55,19 @@ function send() {
   const text = inputText.value.trim()
   if (!text) return
 
-  if (text.startsWith('#')) {
-    window.xechat.execCommand(text)
-  } else {
-    window.xechat.sendMessage(text)
+  console.log('[ChatPanel] send() 触发, text=' + text.substring(0, 50) + ', xechat=' + (typeof window.xechat))
+
+  try {
+    if (text.startsWith('#')) {
+      console.log('[ChatPanel] → execCommand: ' + text)
+      window.xechat.execCommand(text)
+    } else {
+      console.log('[ChatPanel] → sendMessage: ' + text)
+      window.xechat.sendMessage(text)
+    }
+    console.log('[ChatPanel] send() 完成')
+  } catch (e) {
+    console.error('[ChatPanel] 发送失败', e)
   }
 
   inputText.value = ''
@@ -63,16 +76,20 @@ function send() {
 // Enter 发送，Shift+Enter 换行
 function onEnter(e) {
   if (e.shiftKey) {
-    // 允许换行，不做拦截
     return
   }
   e.preventDefault()
   send()
 }
 
-// 键盘焦点默认在输入框
+// 键盘焦点默认在输入框; 无消息时自动注入 HELP 提示; 建立 JSBridge→chatStore 桥接
 onMounted(() => {
-  console.log('[ChatPanel] 组件挂载, 当前 state.messages.length=' + state.messages.length)
+  console.log('[ChatPanel] 组件挂载, chatStore.messages.length=' + chatStore.messages.length)
+  setChatStoreBridge(chatStore)
+  if (chatStore.isEmpty) {
+    chatStore.addMessages(helpStore.helpTexts)
+    console.log('[ChatPanel] 已从 helpStore 注入 HELP 提示，共 ' + helpStore.helpTexts.length + ' 条')
+  }
   inputRef.value?.focus()
 })
 </script>
