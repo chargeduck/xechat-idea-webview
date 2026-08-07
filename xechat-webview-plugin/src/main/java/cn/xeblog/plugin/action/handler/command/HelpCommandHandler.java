@@ -17,26 +17,20 @@ public class HelpCommandHandler extends AbstractCommandHandler {
     @Override
     public void process(String[] args) {
         log.info("[HelpCommandHandler] process 开始执行");
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
+        sb.append("**远程命令**").append(Command.COMMAND_PREFIX).append("\n\n");
+        sb.append("| 命令 | 说明 |\n");
+        sb.append("|------|------|\n");
         for (Command command : Command.values()) {
-            sb.append("· ").append(command.getCommand())
-                    .append("：").append(command.getDesc()).append("\n");
+            sb.append("| **").append(Command.COMMAND_PREFIX).append(command.getCommand())
+                    .append("** | ").append(command.getDesc()).append(" |\n");
         }
-        sb.append(" > Tips: \"{ }\"表示输入参数占位符，\"[ ]\"内的参数为可选参数，所有参数均以空格分隔。\n");
-        sb.append("\n Version ").append(IdeaUtils.getPluginVersion()).append("\n");
+        sb.append("\n> *Tips*: `{ }` 必填参数，`[ ]` 可选参数，参数以空格分隔。\n");
+        sb.append("\n**Version** ").append(IdeaUtils.getPluginVersion()).append("\n\n");
+        sb.append("[项目地址](https://github.com/anlingyi/xechat-idea)  | [更多信息](https://xeblog.cn/?tag=xechat-idea)\n");
 
         ConsoleAction.atomicExec(() -> {
-            ConsoleAction.showSimpleMsg(" 命令列表 & 触发命令前缀 " + Command.COMMAND_PREFIX);
             ConsoleAction.renderText(sb.toString());
-            ConsoleAction.renderText("误入充电鸭鱼塘 怎么切换？\n");
-            ConsoleAction.renderText("#exit 退出\n");
-            ConsoleAction.renderText("#showServer 查询服务列表\n");
-            ConsoleAction.renderText("#login {昵称} -s 0\n");
-            ConsoleAction.renderText(" --------------\n ");
-            ConsoleAction.renderUrl("[开源]", "https://github.com/anlingyi/xechat-idea");
-            ConsoleAction.renderText("  ");
-            ConsoleAction.renderUrl("[更多]", "https://xeblog.cn/?tag=xechat-idea");
-            ConsoleAction.renderText("\n --------------\n");
         });
         org.slf4j.LoggerFactory.getLogger(HelpCommandHandler.class)
                 .info("[HelpCommandHandler] process 执行完毕, buffer size=" + ConsoleAction.getBufferSize());

@@ -16,9 +16,11 @@ public class ShowModeCommandHandler extends AbstractCommandHandler {
     @Override
     public void process(String[] args) {
         ModeEnum[] modes = ModeEnum.values();
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
+        sb.append("### 模式列表\n\n");
         for (int i = 0; i < modes.length; i++) {
-            sb.append(i).append(".").append(modes[i].getName()).append(hasBeenSet(modes[i])).append(" ");
+            sb.append(i).append(". **").append(modes[i].getName()).append("**")
+                    .append(hasBeenSet(modes[i])).append("\n");
         }
         ConsoleAction.showSimpleMsg(sb.toString());
     }

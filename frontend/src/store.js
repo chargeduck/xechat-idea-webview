@@ -98,10 +98,11 @@ on('gameRoom', (data) => {
     handleRoomEvent(data)
 })
 on('message', (data) => {
+    const redText = '<font color=red>' + data.text + '</font>'
     if (_chatStoreBridge) {
-        _chatStoreBridge.addMessage(data.text, 'system')
+        _chatStoreBridge.addMessage(redText, 'system')
     }
-    state.messages.push({ text: data.text, time: new Date().toLocaleTimeString(), type: 'system' })
+    state.messages.push({ text: redText, time: new Date().toLocaleTimeString(), type: 'system' })
     nextTick(() => {
         const el = document.querySelector('.message-list')
         if (el) el.scrollTop = el.scrollHeight

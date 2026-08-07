@@ -6,34 +6,41 @@ import { defineStore } from 'pinia'
  */
 export const useHelpStore = defineStore('help', {
   state: () => ({
-    // 首次加载时 ChatPanel 检测消息为空则自动注入
-    // 这里只存数据，注入逻辑由 ChatPanel.vue 的 onMounted 控制
-    messages: [
-      '命令列表 & 触发命令前缀 #',
-      '',
-      '· help：帮助',
-      '· mask {关键词}：屏蔽指定关键词消息',
-      '· unmask {关键词}：取消屏蔽',
-      '· backgroundImage {图片URL}：切换聊天背景图片',
-      '· clear：清空消息列表',
-      '· status：查看当前连接状态',
-      '· showServer：查询服务列表',
-      '· login {昵称}：登录服务器',
-      '· exit：退出登录',
-      '· chat {内容}：发送公开消息',
-      '· msg {用户} {内容}：发送私聊消息',
-      '',
-      ' > Tips: "{ }"表示输入参数占位符，"[ ]"内的参数为可选参数，所有参数均以空格分隔。',
-      '',
-      '--------------',
-      '[开源](https://github.com/anlingyi/xechat-idea)  [更多](https://xeblog.cn/?tag=xechat-idea)',
-      '--------------'
-    ]
+    helpText: `## 命令列表
+
+| 命令 | 说明 |
+|------|------|
+| **#help** | 显示此帮助 |
+| **#clean** | 清空消息列表 |
+| **#login {昵称}** | 登录服务器 |
+| **#exit** | 退出登录 |
+| **#showServer** | 查询服务列表 |
+| **#showStatus** | 查看连接状态 |
+| **#setStatus {状态}** | 设置自定义状态 |
+| **#showGame** | 显示游戏列表 |
+| **#play {序号}** | 开始游戏 |
+| **#join {房间号}** | 加入游戏房间 |
+| **#over** | 结束当前游戏 |
+| **#showMode** | 显示模式列表 |
+| **#mode {序号}** | 切换模式 |
+| **#open {序号}** | 打开工具 |
+| **#weather {城市}** | 查询天气 |
+| **#notify {内容}** | 发送系统通知 |
+| **#alive** | 存活检测 |
+| **#moyu** | 摸鱼 |
+| **#admin {指令}** | 管理员指令 |
+| **#mask {关键词}** | 屏蔽关键词消息 |
+| **#unmask {关键词}** | 取消屏蔽 |
+| **#backgroundImage {URL}** | 切换聊天背景 |
+
+> *Tips*: \`{ }\` 必填参数，\`[ ]\` 可选参数，参数以空格分隔。
+
+[开源](https://github.com/anlingyi/xechat-idea)  ·  [更多](https://xeblog.cn/?tag=xechat-idea)`
   }),
 
   getters: {
     helpTexts(state) {
-      return state.messages
+      return state.helpText
     }
   }
 })

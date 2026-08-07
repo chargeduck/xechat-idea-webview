@@ -15,7 +15,16 @@ const renderedHtml = computed(() => {
 })
 
 function renderSimpleMarkdown(text) {
-  let html = text
+  // 1. 先提取 <font color=...> 标签，替换为占位符，避免被转义
+  const fontPlaceholders = []
+  let html = text.replace(/<font\s+color=(['"]?)(\w+)\1\s*>(.*?)<\/font>/g, (_, _q, color, content) => {
+    const idx = fontPlaceholders.length
+    fontPlaceholders.push(`<span style="color:${color}">${content}</span>`)
+    return `\u0000FONT_${idx}\u0000`
+  })
+
+  // 2. HTML 转义
+  html = html
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -53,8 +62,28 @@ function renderSimpleMarkdown(text) {
   // horizontal rule
   html = html.replace(/^---$/gm, '<hr>')
 
+  // Markdown tables: header | separator | body...
+  html = html.replace(/^\|(.+)\|\n\|[-: |]+\|\n((?:^\|.+\|(?:\n|$))+)/gm, (_, headerLine, bodyLines) => {
+    const headers = headerLine.split('|').map(h => h.trim()).filter(h => h)
+    const rows = bodyLines.trim().split('\n')
+    var th = '', td = ''
+    headers.forEach(function (h) { th += '<th>' + h + '</th>' })
+    rows.forEach(function (row) {
+      const cells = row.split('|').map(function (c) { return c.trim() }).filter(function (c) { return c })
+      td += '<tr>'
+      cells.forEach(function (c) { td += '<td>' + c + '</td>' })
+      td += '</tr>'
+    })
+    return '<table><thead><tr>' + th + '</tr></thead><tbody>' + td + '</tbody></table>'
+  })
+
   // line breaks
   html = html.replace(/\n\n/g, '<br><br>')
+
+  // 3. 还原 font 占位符
+  fontPlaceholders.forEach((span, idx) => {
+    html = html.replace(`\u0000FONT_${idx}\u0000`, span)
+  })
 
   return html
 }

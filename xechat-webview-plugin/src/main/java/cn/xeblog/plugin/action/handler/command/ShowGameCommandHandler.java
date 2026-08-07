@@ -14,11 +14,12 @@ public class ShowGameCommandHandler extends AbstractCommandHandler {
 
     @Override
     public void process(String[] args) {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
+        sb.append("### 游戏列表\n\n");
         Game[] games = Game.values();
         for (int i = 0; i < games.length; i++) {
             Game game = games[i];
-            sb.append(i).append(".").append(game.getName()).append("\n");
+            sb.append(i).append(". **").append(game.getName()).append("**\n");
         }
 
         ConsoleAction.showSimpleMsg(sb.toString());

@@ -32,6 +32,7 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from '../stores/chatStore'
 import { useHelpStore } from '../stores/helpStore'
 import { setChatStoreBridge } from '../store.js'
+import { getMode } from '../api.js'
 import MarkdownMessage from './MarkdownMessage.vue'
 
 const chatStore = useChatStore()
@@ -86,9 +87,10 @@ function onEnter(e) {
 onMounted(() => {
   console.log('[ChatPanel] 组件挂载, chatStore.messages.length=' + chatStore.messages.length)
   setChatStoreBridge(chatStore)
-  if (chatStore.isEmpty) {
-    chatStore.addMessages(helpStore.helpTexts)
-    console.log('[ChatPanel] 已从 helpStore 注入 HELP 提示，共 ' + helpStore.helpTexts.length + ' 条')
+  // 仅 WebSocket 模式（VSCode无枚举提示）时注入 helpStore
+  if (chatStore.isEmpty && getMode() === 'websocket') {
+    chatStore.addMessage(helpStore.helpTexts)
+    console.log('[ChatPanel] WebSocket 模式，已从 helpStore 注入帮助提示')
   }
   inputRef.value?.focus()
 })

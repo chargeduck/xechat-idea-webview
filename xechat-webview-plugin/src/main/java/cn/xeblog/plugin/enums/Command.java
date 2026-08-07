@@ -39,14 +39,14 @@ public enum Command {
             return "游戏功能，" + this.getCommand() + " {游戏编号}";
         }
     },
-    JOIN("join", "加入游戏 | 拒绝邀请：此命令后加任意字符"),
+    JOIN("join", "加入游戏 <br/> 拒绝邀请：此命令后加任意字符"),
     OPEN("open") {
         @Override
         public String getDesc() {
             return "打开工具，" + this.getCommand() + " [{工具编号}]";
         }
     },
-    OVER("over", "结束游戏 | 工具"),
+    OVER("over", "结束游戏 <br/> 结束工具"),
     SHOW_MODE("showMode", "查看模式选项"),
     MODE("mode") {
         @Override
@@ -57,10 +57,10 @@ public enum Command {
     WEATHER("weather") {
         @Override
         public String getDesc() {
-            return "天气查询，" + this.getCommand() + " {地名，如：北京市} [-d {0：当前，默认 | 3：未来3天 | 7：未来7天}]";
+            return "天气查询，" + this.getCommand() + " {地名，如：北京市} <br/>[-d {0：当前，默认 <br/> 3：未来3天 <br/> 7：未来7天}]";
         }
     },
-    NOTIFY("notify", "消息通知，1.正常通知 | 2.隐晦通知 | 3.关闭通知"),
+    NOTIFY("notify", "消息通知，1.正常通知<br/> 2.隐晦通知 <br/> 3.关闭通知"),
     ALIVE("alive", "活着，0.关闭｜1.开启"),
     MO_YU("moyu", "摸鱼办生成"),
     ADMIN("admin", "管控"),

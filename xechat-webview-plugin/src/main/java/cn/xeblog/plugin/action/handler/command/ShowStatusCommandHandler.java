@@ -14,8 +14,8 @@ public class ShowStatusCommandHandler extends AbstractCommandHandler {
 
     @Override
     public void process(String[] args) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("状态值：");
+        var sb = new StringBuilder();
+        sb.append("**状态值：**\n\n");
         UserStatus[] userStatuses = UserStatus.values();
         for (int i = 0; i < userStatuses.length; i++) {
             if (userStatuses[i] == UserStatus.PLAYING) {
@@ -23,7 +23,7 @@ public class ShowStatusCommandHandler extends AbstractCommandHandler {
                 continue;
             }
 
-            sb.append(i).append(".").append(userStatuses[i].alias()).append(" ");
+            sb.append(i).append(". **").append(userStatuses[i].alias()).append("**\n");
         }
 
         ConsoleAction.showSimpleMsg(sb.toString());

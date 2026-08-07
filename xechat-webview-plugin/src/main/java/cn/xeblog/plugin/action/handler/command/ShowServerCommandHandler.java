@@ -1,8 +1,6 @@
 package cn.xeblog.plugin.action.handler.command;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.lang.ConsoleTable;
 import cn.hutool.core.thread.GlobalThreadPool;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
@@ -14,6 +12,7 @@ import cn.xeblog.plugin.action.ConsoleAction;
 import cn.xeblog.plugin.annotation.DoCommand;
 import cn.xeblog.plugin.cache.DataCache;
 import cn.xeblog.plugin.enums.Command;
+import cn.xeblog.plugin.util.MdTableUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -85,15 +84,14 @@ public class ShowServerCommandHandler extends AbstractCommandHandler {
             currentServer.setPort(connection.getPort());
         }
 
-        ConsoleTable consoleTable = new ConsoleTable();
-        consoleTable.setSBCMode(Boolean.FALSE);
-        consoleTable.addHeader("编号", "鱼塘", "状态");
+        var mdTable = MdTableUtil.create();
+        mdTable.addHeader("编号", "鱼塘", "状态");
         for (int i = 0; i < serverList.size(); i++) {
             OnlineServer server = serverList.get(i);
             boolean isCurrentServer = server.equals(currentServer);
-            consoleTable.addBody(Convert.toStr(i), server.getName(), isCurrentServer ? "已连接" : "未连接");
+            mdTable.addBody(Integer.toString(i), server.getName(), isCurrentServer ? "已连接" : "未连接");
         }
-        ConsoleAction.showSimpleMsg(consoleTable.toString());
+        ConsoleAction.showSimpleMsg(mdTable.toString());
     }
 
     @Override

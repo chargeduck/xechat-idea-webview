@@ -20,16 +20,16 @@ public class AliveCommandHandler extends AbstractCommandHandler {
     @Override
     public void process(String[] args) {
         if (args.length < 1) {
-            ConsoleAction.showSimpleMsg("[活着]当前状态：" + (AliveAction.isEnabled() ? "已开启" : "已关闭"));
+            ConsoleAction.showSimpleMsg("**「活着」**当前状态：" + (AliveAction.isEnabled() ? "**已开启**" : "**已关闭**"));
         } else {
             boolean enabled = Integer.parseInt(args[0]) > 0;
             AliveAction.setEnabled(enabled);
-            ConsoleAction.showSimpleMsg("[活着]" + (enabled ? "已开启！" : "已关闭！"));
+            ConsoleAction.showSimpleMsg("**「活着」**" + (enabled ? "**已开启！**" : "**已关闭！**"));
         }
 
         if (AliveAction.isEnabled()) {
             boolean flushed = AliveAction.flushNextStartTime();
-            ConsoleAction.showSimpleMsg("下一次提醒时间：" + getNextStartTime() + (flushed ? " (已更新)" : ""));
+            ConsoleAction.showSimpleMsg("下一次提醒时间：**" + getNextStartTime() + "**" + (flushed ? " (已更新)" : ""));
         }
     }
 

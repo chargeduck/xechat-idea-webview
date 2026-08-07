@@ -20,11 +20,12 @@ public class OpenCommandHandler extends AbstractCommandHandler {
     protected void process(String[] args) {
         int len = args.length;
         if (len < 1) {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
+            sb.append("### 工具列表\n\n");
             Tools[] tools = Tools.values();
             for (int i = 0; i < tools.length; i++) {
                 Tools tool = tools[i];
-                sb.append(i).append(".").append(tool.getName()).append("\n");
+                sb.append(i).append(". **").append(tool.getName()).append("**\n");
             }
 
             ConsoleAction.showSimpleMsg(sb.toString());
