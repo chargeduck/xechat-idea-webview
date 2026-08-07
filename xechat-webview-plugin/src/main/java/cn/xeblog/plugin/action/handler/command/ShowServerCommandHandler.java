@@ -14,6 +14,7 @@ import cn.xeblog.plugin.cache.DataCache;
 import cn.xeblog.plugin.enums.Command;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
  * @author anlingyi
  * @date 2020/9/11
  */
+@Slf4j
 @DoCommand(Command.SHOW_SERVER)
 public class ShowServerCommandHandler extends AbstractCommandHandler {
 
@@ -48,6 +50,7 @@ public class ShowServerCommandHandler extends AbstractCommandHandler {
             GlobalThreadPool.execute(() -> {
                 try {
                     DataCache.serverList = ServerUtils.getServerList();
+                    log.info("server list:{}", DataCache.serverList);
                     showServerList();
                 } catch (Exception e) {
                     e.printStackTrace();

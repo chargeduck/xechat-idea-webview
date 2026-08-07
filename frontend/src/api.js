@@ -4,6 +4,16 @@
  */
 const xechat = window.xechat || {}
 
+// DEV 环境 mock：浏览器中没有 JCEF 桥接层时提供空壳，避免报错
+if (!xechat.getState) {
+    xechat.getState = function () { return '{}' }
+    xechat.getTools = function () { return '[]' }
+    xechat.getGameList = function () { return '[]' }
+    xechat.execCommand = function (cmd) { console.log('[xechat mock] execCommand: ' + cmd) }
+    xechat.sendMessage = function (msg) { console.log('[xechat mock] sendMessage: ' + msg) }
+    xechat.ready = function () { console.log('[xechat mock] ready') }
+}
+
 xechat._handlers = {}
 xechat.on = function (event, handler) {
     if (!this._handlers[event]) {

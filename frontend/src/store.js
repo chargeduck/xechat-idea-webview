@@ -29,31 +29,32 @@ window.addEventListener('hashchange', () => {
 })
 state.currentRoute = location.hash.slice(2) || 'chat'
 
-// DEV 环境 mock：浏览器中没有 JCEF 桥接层时提供空壳，避免报错
-if (!window.xechat) {
-    window.xechat = {
-        on() {},
-        getState() { return '{}' },
-        getTools() { return '[]' },
-        getGameList() { return '[]' },
-        execCommand(cmd) { console.log('[xechat mock] execCommand: ' + cmd) },
-        sendMessage(msg) { console.log('[xechat mock] sendMessage: ' + msg) },
-        ready() { console.log('[xechat mock] ready') }
-    }
-}
-
 // ---- 消息处理 ----
 // 桥接器：set 后同时写入 Pinia chatStore
 export let _chatStoreBridge = null
-export function setChatStoreBridge(store) { _chatStoreBridge = store }
+// 消息缓冲：桥接未建立时缓存 console 消息
+let __pendingConsoleMessages = []
+
+export function setChatStoreBridge(store) {
+    _chatStoreBridge = store
+    // 排空缓冲队列——解决 ChatPanel 挂载前 Java 已推送消息的时序竞态
+    if (__pendingConsoleMessages.length > 0) {
+        console.log('[store.js] 桥接已建立，排空 ' + __pendingConsoleMessages.length + ' 条缓存消息')
+        _chatStoreBridge.addMessages(__pendingConsoleMessages)
+        __pendingConsoleMessages = []
+    }
+}
 
 console.log('[store.js] 脚本加载，准备注册 console 监听器')
 window.xechat.on('console', (msgs) => {
     console.log('[store.js] xechat:console 回调触发, count=' + msgs.length)
 
-    // 写入 Pinia chatStore（若已桥接）
+    // 写入 Pinia chatStore（若已桥接）；未就绪时先缓存，setChatStoreBridge 时自动排空
     if (_chatStoreBridge) {
         _chatStoreBridge.addMessages(msgs)
+    } else {
+        console.log('[store.js] 桥接未就绪，缓存 ' + msgs.length + ' 条消息到队列')
+        __pendingConsoleMessages.push(...msgs)
     }
 
     // 兼容旧 state.messages（其他组件可能引用）

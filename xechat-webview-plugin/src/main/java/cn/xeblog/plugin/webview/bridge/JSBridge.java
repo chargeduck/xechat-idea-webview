@@ -7,6 +7,7 @@ import cn.xeblog.plugin.persistence.PersistenceData;
 import cn.xeblog.plugin.persistence.PersistenceService;
 import cn.xeblog.plugin.tools.Tools;
 import cn.xeblog.commons.enums.Action;
+import cn.xeblog.commons.entity.game.GameRoomMsgDTO;
 import cn.xeblog.plugin.webview.WebViewPanel;
 import cn.xeblog.plugin.webview.VideoPlayerPanel;
 import com.google.gson.Gson;
@@ -24,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * Java ↔ JavaScript 双向通信桥（JCEF 版）。
@@ -63,9 +63,8 @@ public class JSBridge {
      * 必须在渲染进程启动前注册，window.cefQuery 才会在页面加载时自动就绪。
      */
     public void setupMessageRouter() {
-        CefMessageRouter.CefMessageRouterConfig routerConfig =
-            new CefMessageRouter.CefMessageRouterConfig("cefQuery", "cefQueryCancel");
-        CefMessageRouter messageRouter = CefMessageRouter.create(routerConfig);
+        var routerConfig = new CefMessageRouter.CefMessageRouterConfig("cefQuery", "cefQueryCancel");
+        var messageRouter = CefMessageRouter.create(routerConfig);
         messageRouter.addHandler(new CefMessageRouterHandlerAdapter() {
             @Override
             public boolean onQuery(CefBrowser browser, CefFrame frame, long queryId,
@@ -91,7 +90,7 @@ public class JSBridge {
             refreshCache();
 
             // 注入桥接 JS。CefMessageRouter 已在 loadURL 前注册，cefQuery 页面加载即就绪。
-            String bridgeJs = buildInjectionJS();
+            var bridgeJs = buildInjectionJS();
             panel.executeJS(bridgeJs);
             log.info("[JSBridge] 桥接 JS 已注入");
 
@@ -127,111 +126,93 @@ public class JSBridge {
      * window.xechat API 保持与旧 JxBrowser @JsAccessible 版本完全一致。
      */
     private String buildInjectionJS() {
-        String stateJson = escapeForJS(cachedState);
-        String configJson = escapeForJS(cachedConfig);
-        String toolsJson = escapeForJS(cachedTools);
-        String gamesJson = escapeForJS(cachedGames);
-        String readJson = escapeForJS(cachedReadConfig);
-        String isPlaying = String.valueOf(cachedIsPlaying);
+        // 安全转义的 JSON 数据
+        var stateJson = escapeForJS(cachedState);
+        var configJson = escapeForJS(cachedConfig);
+        var toolsJson = escapeForJS(cachedTools);
+        var gamesJson = escapeForJS(cachedGames);
+        var readJson = escapeForJS(cachedReadConfig);
+        var isPlaying = String.valueOf(cachedIsPlaying);
 
-        return "(function(){" +
-            // 缓存数据
-            "var __state=" + stateJson + ";" +
-            "var __config=" + configJson + ";" +
-            "var __tools=" + toolsJson + ";" +
-            "var __games=" + gamesJson + ";" +
-            "var __readConfig=" + readJson + ";" +
-            "var __isPlaying=" + isPlaying + ";" +
+        return /* @formatter:off */
+            """
+            (function(){
+                var __state=%s;
+                var __config=%s;
+                var __tools=%s;
+                var __games=%s;
+                var __readConfig=%s;
+                var __isPlaying=%s;
 
-            // cefQuery 封装（带重试队列，cefQuery 未就绪时排队延迟发送，不再静默丢弃）
-            "var __pendingCalls=[];" +
-            "function _tryFlush(){" +
-                "if(typeof window.cefQuery!=='function'){setTimeout(_tryFlush,50);return;}" +
-                "var pending=__pendingCalls.splice(0);" +
-                "for(var i=0;i<pending.length;i++){" +
-                    "var pc=pending[i];" +
-                    "_makeCall(pc.m,pc.a,pc.cb);" +
-                "}" +
-            "}" +
-            "function _makeCall(m,a,cb){" +
-                "var r=JSON.stringify({method:m,args:a||[]});" +
-                "window.cefQuery({request:r," +
-                    "onSuccess:function(resp){" +
-                        "try{var d=JSON.parse(resp);" +
-                        "if(d&&d.event){" +
-                            "window.dispatchEvent(new CustomEvent('xechat:'+d.event,{detail:d.data||{}}));" +
-                        "}" +
-                        "if(cb)cb(resp);" +
-                        "}catch(ee){}}" +
-                    "," +
-                    "onFailure:function(){}" +
-                "});" +
-            "}" +
-            "function _call(m,a,cb){" +
-                "if(typeof window.cefQuery!=='function'){" +
-                    "console.error('[JSBridge] cefQuery 未就绪，调用入队: '+m);" +
-                    "__pendingCalls.push({m:m,a:a,cb:cb});" +
-                    "if(__pendingCalls.length===1){setTimeout(_tryFlush,50);}" +
-                    "return;" +
-                "}" +
-                "_makeCall(m,a,cb);" +
-            "}" +
+                var __pendingCalls=[];
+                function _tryFlush(){
+                    if(typeof window.cefQuery!=='function'){setTimeout(_tryFlush,50);return;}
+                    var pending=__pendingCalls.splice(0);
+                    for(var i=0;i<pending.length;i++){
+                        var pc=pending[i];
+                        _makeCall(pc.m,pc.a,pc.cb);
+                    }
+                }
+                function _makeCall(m,a,cb){
+                    var r=JSON.stringify({method:m,args:a||[]});
+                    window.cefQuery({request:r,
+                        onSuccess:function(resp){
+                            try{var d=JSON.parse(resp);
+                            if(d&&d.event){
+                                window.dispatchEvent(new CustomEvent('xechat:'+d.event,{detail:d.data||{}}));
+                            }
+                            if(cb)cb(resp);
+                            }catch(ee){}}
+                        ,
+                        onFailure:function(){}
+                    });
+                }
+                function _call(m,a,cb){
+                    if(typeof window.cefQuery!=='function'){
+                        console.error('[JSBridge] cefQuery 未就绪，调用入队: '+m);
+                        __pendingCalls.push({m:m,a:a,cb:cb});
+                        if(__pendingCalls.length===1){setTimeout(_tryFlush,50);}
+                        return;
+                    }
+                    _makeCall(m,a,cb);
+                }
 
-            // 增量注入 window.xechat API（保留 api.js 已有属性如 on/off）
-            "var _x=window.xechat||{};" +
-                // === 频道消息 ===
-                "_x.sendMessage=function(c){_call('sendMessage',[c]);};" +
-                "_x.execCommand=function(c){_call('execCommand',[c]);};" +
-
-                // === 工具操作 ===
-                "_x.openTool=function(i){_call('openTool',[i]);};" +
-                "_x.closeTool=function(){_call('closeTool');};" +
-
-                // === 状态查询（同步返回） ===
-                "_x.getState=function(){return JSON.stringify(__state);};" +
-                "_x.getConfig=function(){return JSON.stringify(__config);};" +
-                "_x.setConfig=function(k,v){_call('setConfig',[k,v]);};" +
-                "_x.getTools=function(){return JSON.stringify(__tools);};" +
-                "_x.getUserAgents=function(){" +
-                    "return JSON.stringify(['PC','Android','iPhone','iPad','Mac']);" +
-                "};" +
-
-                // === 游戏 API ===
-                "_x.getGameList=function(){return JSON.stringify(__games);};" +
-                "_x.joinGame=function(i){_call('joinGame',[i]);};" +
-                "_x.gameAction=function(a){_call('gameAction',[a]);};" +
-                "_x.exitGame=function(){_call('exitGame');};" +
-                "_x.isPlaying=function(){return __isPlaying;};" +
-
-                // === 房间操作 ===
-                "_x.roomReady=function(){_call('roomReady');};" +
-                "_x.roomUnready=function(){_call('roomUnready');};" +
-                "_x.roomInvite=function(u){_call('roomInvite',[u]);};" +
-                "_x.roomLeave=function(){_call('roomLeave');};" +
-
-                // === 浏览器操作 ===
-                "_x.openBrowser=function(u){_call('openBrowser',[u]);};" +
-
-                // === 阅读器 ===
-                "_x.getReadConfig=function(){return JSON.stringify(__readConfig);};" +
-                "_x.setReadConfig=function(c){_call('setReadConfig',[c]);};" +
-
-                // === 就绪信号：Vue 挂载完成、监听器注册完毕后调用 ===
-                "_x.ready=function(){_call('ready');};" +
-
-                // === 内部方法：供 Java 推送更新缓存 ===
-                "_x._updateCache=function(data){" +
-                    "if(data.state)__state=data.state;" +
-                    "if(data.config)__config=data.config;" +
-                    "if(data.tools)__tools=data.tools;" +
-                    "if(data.games)__games=data.games;" +
-                    "if(data.readConfig!==undefined)__readConfig=data.readConfig;" +
-                    "if(data.isPlaying!==undefined)__isPlaying=data.isPlaying;" +
-                "};" +
-            "window.xechat=_x;" +
-            "console.log('[JSBridge] 注入完成, cefQuery='+(typeof window.cefQuery)+', xechat keys='+Object.keys(_x).join(','));" +
-
-            "})();";
+                var _x=window.xechat||{};
+                _x.sendMessage=function(c){_call('sendMessage',[c]);};
+                _x.execCommand=function(c){_call('execCommand',[c]);};
+                _x.openTool=function(i){_call('openTool',[i]);};
+                _x.closeTool=function(){_call('closeTool');};
+                _x.getState=function(){return JSON.stringify(__state);};
+                _x.getConfig=function(){return JSON.stringify(__config);};
+                _x.setConfig=function(k,v){_call('setConfig',[k,v]);};
+                _x.getTools=function(){return JSON.stringify(__tools);};
+                _x.getUserAgents=function(){return JSON.stringify(['PC','Android','iPhone','iPad','Mac']);};
+                _x.getGameList=function(){return JSON.stringify(__games);};
+                _x.joinGame=function(i){_call('joinGame',[i]);};
+                _x.gameAction=function(a){_call('gameAction',[a]);};
+                _x.exitGame=function(){_call('exitGame');};
+                _x.isPlaying=function(){return __isPlaying;};
+                _x.roomReady=function(){_call('roomReady');};
+                _x.roomUnready=function(){_call('roomUnready');};
+                _x.roomInvite=function(u){_call('roomInvite',[u]);};
+                _x.roomLeave=function(){_call('roomLeave');};
+                _x.openBrowser=function(u){_call('openBrowser',[u]);};
+                _x.getReadConfig=function(){return JSON.stringify(__readConfig);};
+                _x.setReadConfig=function(c){_call('setReadConfig',[c]);};
+                _x.ready=function(){_call('ready');};
+                _x._updateCache=function(data){
+                    if(data.state)__state=data.state;
+                    if(data.config)__config=data.config;
+                    if(data.tools)__tools=data.tools;
+                    if(data.games)__games=data.games;
+                    if(data.readConfig!==undefined)__readConfig=data.readConfig;
+                    if(data.isPlaying!==undefined)__isPlaying=data.isPlaying;
+                };
+                window.xechat=_x;
+                console.log('[JSBridge] 注入完成, cefQuery='+(typeof window.cefQuery)+', xechat keys='+Object.keys(_x).join(','));
+            })();
+            """.formatted(stateJson, configJson, toolsJson, gamesJson, readJson, isPlaying);
+            /* @formatter:on */
     }
 
     /**
@@ -239,9 +220,9 @@ public class JSBridge {
      */
     private void handleQuery(String data, CefQueryCallback callback) {
         try {
-            JsCall call = gson.fromJson(data, JsCall.class);
-            String method = call.method;
-            List<String> args = call.args != null ? call.args : Collections.emptyList();
+            var call = gson.fromJson(data, JsCall.class);
+            var method = call.method;
+            var args = call.args != null ? call.args : List.<String>of();
 
             CompletableFuture.runAsync(() -> {
                 try {
@@ -334,7 +315,7 @@ public class JSBridge {
      * 打开工具。index=2（BROWSER2）需走 JxBrowser 视频播放通道。
      */
     private void openToolInternal(int index) {
-        Tools tool = Tools.getTool(index);
+        var tool = Tools.getTool(index);
         if (tool == null) {
             pushMessage("没有找到该工具");
             return;
@@ -364,7 +345,7 @@ public class JSBridge {
     }
 
     private void setConfigInternal(String key, String value) {
-        PersistenceData data = PersistenceService.getData();
+        var data = PersistenceService.getData();
         switch (key) {
             case "username":
                 data.setUsername(value);
@@ -384,10 +365,9 @@ public class JSBridge {
 
     private void roomReadyInternal() {
         try {
-            cn.xeblog.commons.entity.game.GameRoomMsgDTO dto =
-                    new cn.xeblog.commons.entity.game.GameRoomMsgDTO();
+            var dto = new GameRoomMsgDTO();
             dto.setRoomId(GameAction.getRoomId());
-            dto.setMsgType(cn.xeblog.commons.entity.game.GameRoomMsgDTO.MsgType.PLAYER_READY);
+            dto.setMsgType(GameRoomMsgDTO.MsgType.PLAYER_READY);
             MessageAction.send(dto, Action.GAME_ROOM);
         } catch (Exception e) {
             log.error("准备失败", e);
@@ -396,10 +376,9 @@ public class JSBridge {
 
     private void roomUnreadyInternal() {
         try {
-            cn.xeblog.commons.entity.game.GameRoomMsgDTO dto =
-                    new cn.xeblog.commons.entity.game.GameRoomMsgDTO();
+            var dto = new cn.xeblog.commons.entity.game.GameRoomMsgDTO();
             dto.setRoomId(GameAction.getRoomId());
-            dto.setMsgType(cn.xeblog.commons.entity.game.GameRoomMsgDTO.MsgType.PLAYER_CANCEL_READY);
+            dto.setMsgType(GameRoomMsgDTO.MsgType.PLAYER_CANCEL_READY);
             MessageAction.send(dto, Action.GAME_ROOM);
         } catch (Exception e) {
             log.error("取消准备失败", e);
@@ -421,8 +400,7 @@ public class JSBridge {
 
     private void roomLeaveInternal() {
         try {
-            cn.xeblog.commons.entity.game.GameRoomMsgDTO dto =
-                    new cn.xeblog.commons.entity.game.GameRoomMsgDTO();
+            var dto = new cn.xeblog.commons.entity.game.GameRoomMsgDTO();
             dto.setRoomId(GameAction.getRoomId());
             dto.setMsgType(cn.xeblog.commons.entity.game.GameRoomMsgDTO.MsgType.PLAYER_LEFT);
             MessageAction.send(dto, Action.GAME_ROOM);
@@ -435,8 +413,7 @@ public class JSBridge {
 
     private void setReadConfigInternal(String configJson) {
         try {
-            cn.xeblog.plugin.tools.read.ReadConfig config =
-                    gson.fromJson(configJson, cn.xeblog.plugin.tools.read.ReadConfig.class);
+            var config = gson.fromJson(configJson, cn.xeblog.plugin.tools.read.ReadConfig.class);
             if (config != null) {
                 DataCache.readConfig = config;
             }
@@ -452,11 +429,8 @@ public class JSBridge {
      */
     public void pushEvent(String event, Object data) {
         refreshCache();
-        String json = data != null ? gson.toJson(data) : "{}";
-        String js = String.format(
-                "window.dispatchEvent(new CustomEvent('xechat:%s', { detail: %s }))",
-                event, json
-        );
+        var json = data != null ? gson.toJson(data) : "{}";
+        var js = "window.dispatchEvent(new CustomEvent('xechat:%s', { detail: %s }))".formatted(event, json);
         log.info("[JSBridge] pushEvent: event={}, dataLength={}", event, json.length());
         panel.executeJS(js);
         log.info("[JSBridge] executeJS 已调用");
@@ -477,11 +451,9 @@ public class JSBridge {
      */
     private void syncCache() {
         refreshCache();
-        String cacheJs = String.format(
-                "window.xechat&&window.xechat._updateCache({state:%s,config:%s,tools:%s,games:%s,readConfig:%s,isPlaying:%s})",
-                cachedState, cachedConfig, cachedTools, cachedGames, cachedReadConfig,
-                String.valueOf(cachedIsPlaying)
-        );
+        var cacheJs = "window.xechat&&window.xechat._updateCache({state:%s,config:%s,tools:%s,games:%s,readConfig:%s,isPlaying:%s})"
+                .formatted(cachedState, cachedConfig, cachedTools, cachedGames, cachedReadConfig,
+                        String.valueOf(cachedIsPlaying));
         panel.executeJS(cacheJs);
     }
 
@@ -497,9 +469,9 @@ public class JSBridge {
         });
         messagePoller.scheduleAtFixedRate(() -> {
             try {
-                List<String> messages = ConsoleAction.drainMessages();
+                var messages = ConsoleAction.drainMessages();
                 if (!messages.isEmpty()) {
-                    log.info("[JSBridge] 轮询到 {} 条消息，准备推送", messages.size());
+                    log.info("[JSBridge] 轮询到 {} 条消息，准备推送\n{}", messages.size(),messages);
                     pushEvent("console", messages);
                     log.info("[JSBridge] console 事件已推送");
                 }
@@ -520,10 +492,10 @@ public class JSBridge {
     // ==================== 辅助方法 ====================
 
     private String buildToolsJson() {
-        Tools[] tools = Tools.values();
-        ToolInfo[] infos = new ToolInfo[tools.length];
+        var tools = Tools.values();
+        var infos = new ToolInfo[tools.length];
         for (int i = 0; i < tools.length; i++) {
-            Tools t = tools[i];
+            var t = tools[i];
             infos[i] = new ToolInfo(i, t.getName(), t.isRequiredLogin());
         }
         return gson.toJson(infos);

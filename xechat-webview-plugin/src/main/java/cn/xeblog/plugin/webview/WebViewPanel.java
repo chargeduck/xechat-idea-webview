@@ -133,12 +133,16 @@ public class WebViewPanel extends JPanel {
     }
 
     /**
-     * 执行 JavaScript
+     * 执行 JavaScript（调度到 EDT，满足 CEF 的线程要求）
      */
     public void executeJS(String js) {
         if (browser != null && browser.getCefBrowser() != null && initialized) {
-            browser.getCefBrowser().executeJavaScript(js,
-                    browser.getCefBrowser().getURL(), 0);
+            SwingUtilities.invokeLater(() -> {
+                if (browser != null && browser.getCefBrowser() != null) {
+                    browser.getCefBrowser().executeJavaScript(js,
+                            browser.getCefBrowser().getURL(), 0);
+                }
+            });
         }
     }
 
