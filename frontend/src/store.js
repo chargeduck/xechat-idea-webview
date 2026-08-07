@@ -29,6 +29,16 @@ window.addEventListener('hashchange', () => {
 })
 state.currentRoute = location.hash.slice(2) || 'chat'
 
+// DEV 环境 mock：浏览器中没有 JCEF 桥接层时提供空壳，避免报错
+if (!window.xechat) {
+    window.xechat = {
+        on() {},
+        getState() { return '{}' },
+        getTools() { return '[]' },
+        getGameList() { return '[]' }
+    }
+}
+
 // ---- 消息处理 ----
 window.xechat.on('console', (msgs) => {
     msgs.forEach(function (m) {

@@ -4,16 +4,31 @@ import ElementPlus from 'unplugin-element-plus/vite'
 import path from 'path'
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'))
+const outDir = path.resolve(__dirname, '../xechat-webview-plugin/src/main/resources/web')
 
 export default defineConfig({
   plugins: [
     vue(),
     ElementPlus(),
-    // 移除 HTML 中的 type="module"，兼容 file:/// 协议
+    // 仅生产构建：移除 type="module"/crossorigin，script 移到 body 末尾
     {
-      name: 'remove-module-type',
+      name: 'fix-for-file-protocol',
+      apply: 'build',
+      enforce: 'post',
       transformIndexHtml(html) {
-        return html.replace(/\s*type="module"/g, '')
+        html = html.replace(/\s*type="module"/g, '')
+                   .replace(/\s+crossorigin(\s*=\s*"[^"]*")?/gi, '')
+        const scriptRegex = /<script[^>]*src="[^"]*"[^>]*><\/script>/gi
+        const headEndIdx = html.indexOf('</head>')
+        let headScripts = ''
+        html = html.replace(scriptRegex, (match, offset) => {
+          if (offset < headEndIdx) {
+            headScripts += '\n  ' + match
+            return ''
+          }
+          return match
+        })
+        return html.replace('</body>', headScripts + '\n</body>')
       }
     }
   ],
@@ -29,7 +44,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: path.resolve(__dirname, '../xechat-webview-plugin/src/main/resources/web'),
+    outDir,
     emptyOutDir: true,
     assetsInlineLimit: 0,
     // IIFE 格式绕过 file:/// 协议的 ES module CORS 限制
