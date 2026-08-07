@@ -25,6 +25,16 @@ public class ConsoleAction implements MainWindowInitializedEventListener {
     /** 缓冲区最大行数 */
     private static final int MAX_BUFFER_SIZE = 500;
 
+    /** 获取当前缓冲区消息数（仅用于调试日志） */
+    public static int getBufferSize() {
+        LOCK.lock();
+        try {
+            return messageBuffer.size();
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
     private static volatile boolean isNewLine = true;
 
     @Override
@@ -39,6 +49,10 @@ public class ConsoleAction implements MainWindowInitializedEventListener {
         LOCK.lock();
         try {
             List<String> result = new ArrayList<>(messageBuffer);
+            if (!result.isEmpty()) {
+                org.slf4j.LoggerFactory.getLogger(ConsoleAction.class)
+                        .info("[ConsoleAction] drainMessages: {} 条消息", result.size());
+            }
             messageBuffer.clear();
             return result;
         } finally {

@@ -61,6 +61,8 @@ public class JSBridge {
     public void register() {
         if (registered) return;
         try {
+            log.info("[JSBridge] register() 开始");
+
             // 刷新缓存数据
             refreshCache();
 
@@ -71,10 +73,11 @@ public class JSBridge {
             // 注入桥接 JS（包含 window.xechat 和 cefQuery 封装）
             String bridgeJs = buildInjectionJS(query);
             panel.executeJS(bridgeJs);
+            log.info("[JSBridge] 桥接 JS 已注入");
 
             registered = true;
             startMessagePoller();
-            log.info("JS Bridge 注册成功");
+            log.info("[JSBridge] 消息轮询已启动，等待前端 ready 信号后触发 help");
 
         } catch (Exception e) {
             log.error("JS Bridge 注册失败", e);
@@ -174,6 +177,9 @@ public class JSBridge {
                 "_x.getReadConfig=function(){return JSON.stringify(__readConfig);};" +
                 "_x.setReadConfig=function(c){_call('setReadConfig',[c]);};" +
 
+                // === 就绪信号：Vue 挂载完成、监听器注册完毕后调用 ===
+                "_x.ready=function(){_call('ready');};" +
+
                 // === 内部方法：供 Java 推送更新缓存 ===
                 "_x._updateCache=function(data){" +
                     "if(data.state)__state=data.state;" +
@@ -261,6 +267,23 @@ public class JSBridge {
             case "setReadConfig":
                 if (!args.isEmpty()) setReadConfigInternal(args.get(0));
                 break;
+            case "ready":
+                onFrontReady();
+                break;
+        }
+    }
+
+    /**
+     * 前端 Vue 应用挂载、监听器全部注册完毕后回调。
+     * 此处才安全地触发 #help 命令，避免消息早于监听器注册到达而丢失。
+     */
+    private void onFrontReady() {
+        log.info("[JSBridge] 收到前端 ready 信号，触发 help 命令");
+        try {
+            cn.xeblog.plugin.enums.Command.handle("#help");
+            log.info("[JSBridge] help 命令已执行");
+        } catch (Exception e) {
+            log.error("触发 help 命令失败", e);
         }
     }
 
@@ -393,7 +416,9 @@ public class JSBridge {
                 "window.dispatchEvent(new CustomEvent('xechat:%s', { detail: %s }))",
                 event, json
         );
+        log.info("[JSBridge] pushEvent: event={}, dataLength={}", event, json.length());
         panel.executeJS(js);
+        log.info("[JSBridge] executeJS 已调用");
 
         // 推送最新缓存同步
         syncCache();
@@ -423,6 +448,7 @@ public class JSBridge {
 
     private void startMessagePoller() {
         if (messagePoller != null) return;
+        log.info("[JSBridge] 启动消息轮询器（200ms 间隔）");
         messagePoller = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "xechat-msg-poller");
             t.setDaemon(true);
@@ -432,10 +458,12 @@ public class JSBridge {
             try {
                 List<String> messages = ConsoleAction.drainMessages();
                 if (!messages.isEmpty()) {
+                    log.info("[JSBridge] 轮询到 {} 条消息，准备推送", messages.size());
                     pushEvent("console", messages);
+                    log.info("[JSBridge] console 事件已推送");
                 }
             } catch (Exception e) {
-                // ignore poll failures
+                log.error("[JSBridge] 轮询异常", e);
             }
         }, 200, 200, TimeUnit.MILLISECONDS);
     }

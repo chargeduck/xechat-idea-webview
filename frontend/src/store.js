@@ -40,8 +40,11 @@ if (!window.xechat) {
 }
 
 // ---- 消息处理 ----
+console.log('[store.js] 脚本加载，准备注册 console 监听器')
 window.xechat.on('console', (msgs) => {
+    console.log('[store.js] xechat:console 回调触发, count=' + msgs.length)
     msgs.forEach(function (m) {
+        console.log('[store.js] 追加消息: ' + (typeof m === 'string' ? m.substring(0, 80) : JSON.stringify(m).substring(0, 80)))
         state.messages.push({ text: m, time: new Date().toLocaleTimeString() })
     })
     if (state.messages.length > 1000) {

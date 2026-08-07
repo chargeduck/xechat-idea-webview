@@ -4,16 +4,19 @@ import cn.xeblog.plugin.action.ConsoleAction;
 import cn.xeblog.plugin.annotation.DoCommand;
 import cn.xeblog.plugin.enums.Command;
 import cn.xeblog.plugin.util.IdeaUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author anlingyi
  * @date 2020/8/19
  */
 @DoCommand(Command.HELP)
+@Slf4j
 public class HelpCommandHandler extends AbstractCommandHandler {
 
     @Override
     public void process(String[] args) {
+        log.info("[HelpCommandHandler] process 开始执行");
         StringBuilder sb = new StringBuilder();
         for (Command command : Command.values()) {
             sb.append("· ").append(command.getCommand())
@@ -35,6 +38,8 @@ public class HelpCommandHandler extends AbstractCommandHandler {
             ConsoleAction.renderUrl("[更多]", "https://xeblog.cn/?tag=xechat-idea");
             ConsoleAction.renderText("\n --------------\n");
         });
+        org.slf4j.LoggerFactory.getLogger(HelpCommandHandler.class)
+                .info("[HelpCommandHandler] process 执行完毕, buffer size=" + ConsoleAction.getBufferSize());
     }
 
     @Override

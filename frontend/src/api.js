@@ -9,9 +9,11 @@ xechat.on = function (event, handler) {
     if (!this._handlers[event]) {
         this._handlers[event] = []
         window.addEventListener('xechat:' + event, function (e) {
-            (xechat._handlers[event] || []).forEach(function (fn) { fn(e.detail) })
+            console.log('[api.js] 收到 xechat:' + event + ' 事件, detail:', e.detail)
+            ;(xechat._handlers[event] || []).forEach(function (fn) { fn(e.detail) })
         })
     }
+    console.log('[api.js] 注册 xechat:' + event + ' 监听器')
     this._handlers[event].push(handler)
 }
 xechat.off = function (event, handler) {

@@ -26,7 +26,7 @@
             :class="{ active: currentRoute === 'games' || currentRoute === 'room' }"
             @click="state.currentRoute = 'games'"
           >
-            <el-icon :size="20"><GameController /></el-icon>
+            <el-icon :size="20"><Trophy /></el-icon>
           </div>
         </el-tooltip>
       </div>

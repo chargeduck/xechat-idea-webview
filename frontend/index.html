@@ -9,16 +9,45 @@
         #error-box { display:none; padding:20px; color:#f56c6c; white-space:pre-wrap; font-size:13px; }
     </style>
     <script>
+        // 捕获 JS 运行时错误
         window.onerror = function(msg, url, line, col, error) {
+            console.error('[onerror]', msg, url, line, col, error);
             var app = document.getElementById('app');
             var box = document.getElementById('error-box');
+            if (!box) return false;
             box.style.display = 'block';
             box.textContent = 'JS Error: ' + msg + '\\nFile: ' + url + '\\nLine: ' + line + ':' + col;
-            if (error && error.stack) box.textContent += '\\n\\nStack:\\n' + error.stack;
-            app.innerHTML = '';
-            app.appendChild(box);
+            if (error) {
+                box.textContent += '\\n\\nError.name: ' + (error.name || '(无)');
+                box.textContent += '\\nError.message: ' + (error.message || '(无)');
+                if (error.stack) box.textContent += '\\n\\nStack:\\n' + error.stack;
+            }
+            if (app) {
+                app.innerHTML = '';
+                app.appendChild(box);
+            }
             return true;
         };
+        // 捕获资源加载错误（图片/字体/脚本加载失败等）
+        window.addEventListener('error', function(e) {
+            if (e.target !== window) {
+                console.error('[resource error]', e.target.tagName, e.target.src || e.target.href, e.message);
+                var box = document.getElementById('error-box');
+                if (box && box.style.display !== 'block') {
+                    box.style.display = 'block';
+                    box.textContent = 'Resource Error: ' + (e.target.tagName || '?') + ' ' + (e.target.src || e.target.href || '');
+                }
+            }
+        }, true);
+        // 捕获未处理的 Promise rejection
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('[unhandledrejection]', e.reason);
+            var box = document.getElementById('error-box');
+            if (box && box.style.display !== 'block') {
+                box.style.display = 'block';
+                box.textContent = 'Unhandled Rejection: ' + (e.reason && e.reason.stack ? e.reason.stack : String(e.reason));
+            }
+        });
     </script>
 </head>
 <body>
@@ -28,6 +57,9 @@
         </div>
     </div>
     <div id="error-box"></div>
+    <script>
+        console.log('[index.html] DOM 就绪，即将加载 Vue 应用');
+    </script>
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
