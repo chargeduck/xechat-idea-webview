@@ -1,6 +1,9 @@
 /**
  * xechat JSBridge 前端封装。
  * 通过 window.xechat 与 Java 端通信，事件通过 CustomEvent 接收。
+ *
+ * 注意：_handlers / on / off 可能已被 index.html 内联脚本初始化，
+ * 此处仅做追加填充，不覆盖已有实现（Rollup IIFE 可能让 store.js 先于本模块执行）。
  */
 const xechat = window.xechat || {}
 
@@ -14,8 +17,9 @@ if (!xechat.getState) {
     xechat.ready = function () { console.log('[xechat mock] ready') }
 }
 
-xechat._handlers = {}
-xechat.on = function (event, handler) {
+// 事件系统：不覆盖 index.html 内联脚本已建立的 _handlers / on / off
+xechat._handlers = xechat._handlers || {}
+xechat.on = xechat.on || function (event, handler) {
     if (!this._handlers[event]) {
         this._handlers[event] = []
         window.addEventListener('xechat:' + event, function (e) {
@@ -26,7 +30,7 @@ xechat.on = function (event, handler) {
     console.log('[api.js] 注册 xechat:' + event + ' 监听器')
     this._handlers[event].push(handler)
 }
-xechat.off = function (event, handler) {
+xechat.off = xechat.off || function (event, handler) {
     if (this._handlers[event]) {
         this._handlers[event] = this._handlers[event].filter(function (fn) { return fn !== handler })
     }

@@ -61,6 +61,27 @@
     <script>
         console.log('[index.html] DOM 就绪，即将加载 Vue 应用');
     </script>
+    <script>
+        // 确保 window.xechat 事件系统在 Vue bundle（Rollup IIFE）之前就绪
+        // IIFE bundle 中 store.js 可能在 api.js 之前执行，导致 xechat.on() 报错
+        var _x = window.xechat || {};
+        _x._handlers = _x._handlers || {};
+        _x.on = _x.on || function (event, handler) {
+            if (!this._handlers[event]) {
+                this._handlers[event] = [];
+                window.addEventListener('xechat:' + event, function (e) {
+                    (window.xechat._handlers[event] || []).forEach(function (fn) { fn(e.detail); });
+                });
+            }
+            this._handlers[event].push(handler);
+        };
+        _x.off = _x.off || function (event, handler) {
+            if (this._handlers[event]) {
+                this._handlers[event] = this._handlers[event].filter(function (fn) { return fn !== handler; });
+            }
+        };
+        window.xechat = _x;
+    </script>
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
