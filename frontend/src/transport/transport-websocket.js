@@ -19,12 +19,15 @@ export class WebSocketTransport {
     this._heartbeatTimer = null
     this._reconnectTimer = null
     this._reconnectDelay = 3000
+    this._reconnectAttempts = 0
+    this._maxReconnectAttempts = 3
     this._intentionalClose = false
   }
 
   async connect() {
     if (this._ws && this._ws.readyState === WebSocket.OPEN) return
     this._intentionalClose = false
+    this._reconnectAttempts = 0
     var self = this
 
     return new Promise(function(resolve, reject) {
@@ -54,25 +57,31 @@ export class WebSocketTransport {
         if (!self._intentionalClose) self._scheduleReconnect()
       }
 
-      ws.onerror = function(err) {
-        console.error('[WS] connection error:', err)
-        reject(err)
+      ws.onerror = function() {
+        // 初始化连接失败不阻断 app 启动（浏览器环境通常无后端服务）
+        // 重连由 onclose → _scheduleReconnect 处理，或用户通过 #login 手动连接
+        console.warn('[WS] initial connection failed, server may not be running:', self._url)
+        resolve()
       }
     })
   }
 
   _dispatch(msg) {
-    var type = msg.type
+    // 服务端协议使用 action 字段（LOGIN/CHAT/SYSTEM/...），兼容 type 兜底
+    var type = msg.action || msg.type
     switch (type) {
       case 'USER':
+      case 'CHAT':
         this._emit('message', {
-          user: msg.user, content: msg.body && msg.body.content,
+          type: 'user',
+          user: msg.user, text: msg.body && msg.body.content,
           msgType: msg.body && msg.body.msgType, toUsers: msg.body && msg.body.toUsers, time: msg.time
         })
         break
       case 'SYSTEM':
-        this._emit('message', { type: 'system', content: msg.body, time: msg.time })
-        this._emit('system', { content: msg.body, time: msg.time })
+        var sysText = typeof msg.body === 'string' ? msg.body : (msg.body && msg.body.content) || ''
+        this._emit('message', { type: 'system', text: sysText, time: msg.time })
+        this._emit('system', { text: sysText, time: msg.time })
         break
       case 'ONLINE_USERS':
         this._emit('onlineUsers', { userList: (msg.body && msg.body.userList) || [], time: msg.time })
@@ -126,6 +135,7 @@ export class WebSocketTransport {
     // 断开旧连接
     this.disconnect()
     this._intentionalClose = false
+    this._reconnectAttempts = 0
 
     var self = this
     return new Promise(function(resolve, reject) {
@@ -244,8 +254,14 @@ export class WebSocketTransport {
 
   _scheduleReconnect() {
     if (this._reconnectTimer) return
+    if (this._reconnectAttempts >= this._maxReconnectAttempts) {
+      console.log('[WS] Max reconnect attempts (' + this._maxReconnectAttempts + ') reached, waiting for manual connect')
+      this._emit('disconnected', { code: -1, exhausted: true })
+      return
+    }
+    this._reconnectAttempts++
     var self = this
-    console.log('[WS] reconnecting in', this._reconnectDelay, 'ms')
+    console.log('[WS] reconnecting in', this._reconnectDelay, 'ms (attempt ' + this._reconnectAttempts + '/' + this._maxReconnectAttempts + ')')
     this._reconnectTimer = setTimeout(function() { self._reconnectTimer = null; self.connect().catch(function(){}) }, this._reconnectDelay)
   }
 

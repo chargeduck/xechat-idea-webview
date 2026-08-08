@@ -5,7 +5,10 @@
         <!-- 系统消息：VitePress 风格彩色容器块 -->
         <div v-if="msg.type === 'system'" :class="['system-msg-box', classifySystemMsg(msg.text)]">
           <span class="system-msg-icon">{{ systemMsgIcon(msg.text) }}</span>
-          <span class="system-msg-text">{{ stripHtml(msg.text) }}</span>
+          <div class="system-msg-body">
+            <div class="system-msg-title">{{ systemMsgTitle(msg.text) }}</div>
+            <div class="system-msg-text">{{ stripHtml(msg.text) }}</div>
+          </div>
         </div>
         <!-- 普通消息：Markdown 渲染 -->
         <MarkdownMessage v-else :content="msg.text" />
@@ -88,6 +91,14 @@ function systemMsgIcon(text) {
   if (cls === 'error') return '\u26A0'   // ⚠
   if (cls === 'notice') return '\u2192'  // →
   return '\u2139'                         // ℹ
+}
+
+/** 系统消息标题 */
+function systemMsgTitle(text) {
+  const cls = classifySystemMsg(text)
+  if (cls === 'error') return '系统错误'
+  if (cls === 'notice') return '系统通知'
+  return '系统提示'
 }
 
 // 文字样式选中：将当前输入文本包裹为样式标签
@@ -211,10 +222,18 @@ async function send() {
       await handleLogin(text)
     } else if (text.startsWith('#')) {
       console.log('[ChatPanel] → execCommand: ' + text)
-      window.xechat.execCommand(text)
+      if (transport.mode === 'jsbridge') {
+        window.xechat.execCommand(text)
+      } else {
+        transport.execCommand(text)
+      }
     } else {
       console.log('[ChatPanel] → sendMessage: ' + text)
-      window.xechat.sendMessage(text)
+      if (transport.mode === 'jsbridge') {
+        window.xechat.sendMessage(text)
+      } else {
+        transport.sendMessage(text)
+      }
     }
     console.log('[ChatPanel] send() 完成')
   } catch (e) {
@@ -267,7 +286,7 @@ onMounted(() => {
 .system-msg-box {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
   margin: 4px 0;
   padding: 6px 12px 6px 10px;
   border-left: 4px solid;
@@ -278,26 +297,38 @@ onMounted(() => {
   .system-msg-icon {
     flex-shrink: 0;
     font-size: 13px;
-    margin-top: 1px;
+    margin-top: 2px;
+  }
+  .system-msg-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .system-msg-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+    font-size: 12px;
   }
   .system-msg-text {
-    flex: 1;
+    word-break: break-word;
   }
 
   &.error {
     border-color: var(--danger-color);
     background: rgba(244, 71, 71, 0.08);
     .system-msg-icon { color: var(--danger-color); }
+    .system-msg-title { color: var(--danger-color); }
   }
   &.notice {
     border-color: var(--success-color);
     background: rgba(78, 201, 176, 0.08);
     .system-msg-icon { color: var(--success-color); }
+    .system-msg-title { color: var(--success-color); }
   }
   &.info {
     border-color: var(--accent-color);
     background: rgba(0, 122, 204, 0.08);
     .system-msg-icon { color: var(--accent-color); }
+    .system-msg-title { color: var(--accent-color); }
   }
 }
 

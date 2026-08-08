@@ -23,7 +23,14 @@ class TransportManager {
     } else if (this._mode === 'jsbridge') {
       useWS = false
     } else {
-      useWS = (typeof window.xechat === 'undefined' || !window.xechat || !window.xechat.execCommand)
+      // JCEF 环境：cefQuery 在 loadURL 之前就注册好了，比 getState() mock 更可靠
+      // 真实 JSBridge 由 Java 在页面加载完成后注入，此时 getState() 仍是 mock 的 '{}'，
+      // 仅靠 getState() !== '{}' 会误判为浏览器环境，导致 IDEA 插件走到 WebSocket
+      var isJCef = typeof window.cefQuery === 'function'
+      var isRealJSBridge = window.xechat
+        && typeof window.xechat.getState === 'function'
+        && (window.xechat.getState() !== '{}' || isJCef)
+      useWS = !isRealJSBridge
     }
 
     if (useWS) {

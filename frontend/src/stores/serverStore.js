@@ -50,7 +50,9 @@ function testConnection(host, port, timeout) {
       })
     })
   }
-  // Web：fetch no-cors 作为 TCP 探针，端口通则 resolve，拒绝/超时则 false
+  // Web：fetch no-cors 作为 TCP 探针，端口通则 resolve
+  // 非 HTTP 服务器（如聊天服务）不返回 HTTP 响应会触发 ERR_EMPTY_RESPONSE，
+  // 此时 TCP 握手已建立，应视为存活；仅主动超时（AbortError）判定为不可达
   var controller = new AbortController()
   var timer = setTimeout(function () { controller.abort() }, timeout)
   return fetch('http://' + host + ':' + port, {
@@ -59,9 +61,9 @@ function testConnection(host, port, timeout) {
   }).then(function () {
     clearTimeout(timer)
     return true
-  }).catch(function () {
+  }).catch(function (err) {
     clearTimeout(timer)
-    return false
+    return err.name !== 'AbortError'
   })
 }
 

@@ -4,12 +4,14 @@ import cn.xeblog.commons.entity.react.BaseReact;
 import cn.xeblog.commons.enums.Permissions;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
  * @author anlingyi
  * @date 2023/2/18 8:07 PM
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

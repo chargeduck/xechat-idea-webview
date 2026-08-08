@@ -2,11 +2,13 @@ package cn.xeblog.commons.entity.game.landlords;
 
 import cn.xeblog.commons.entity.game.GameDTO;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author anlingyi
  * @date 2022/6/2 1:14 下午
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class LandlordsGameDTO extends GameDTO {
 

@@ -2,6 +2,28 @@ import { reactive, nextTick } from 'vue'
 import { on, getMode } from './api.js'
 import { ElMessage } from 'element-plus'
 
+/**
+ * 检测 JSBridge console 消息是否为系统消息。
+ * console 消息是纯文本，需按关键词特征判定：
+ * - "SYSTEM_MSG::" 前缀 → 系统消息
+ * - "[xxx]进入了鱼塘" / "[xxx]离开了鱼塘" → 进出提示
+ * - 含 "系统消息"/"系统公告"/"系统提示"/"系统通知" → 系统消息
+ * - 服务端公告类："当前服务端版本" / "公告" / "版本过低" / "版本更新"
+ * 其余视为普通用户消息。
+ */
+function _isConsoleSystemMsg(text) {
+    if (typeof text !== 'string') return false
+    // 系统消息前缀（ConsoleAction.formatSystemMsg 使用）
+    if (text.indexOf('SYSTEM_MSG::') === 0) return true
+    // 进出鱼塘提示
+    if (/^\[.+\]进入/.test(text) || /^\[.+\]离开/.test(text)) return true
+    // 显式系统关键词
+    if (/系统消息|系统公告|系统提示|系统通知/.test(text)) return true
+    // 服务端版本类公告
+    if (/当前服务端版本|服务端版本过低|服务端版本更新|公告/.test(text)) return true
+    return false
+}
+
 export const state = reactive({
     online: false,
     username: '',
@@ -42,7 +64,7 @@ export function setChatStoreBridge(store) {
     // 排空缓冲队列——解决 ChatPanel 挂载前 Java 已推送消息的时序竞态
     if (__pendingConsoleMessages.length > 0) {
         console.log('[store.js] 桥接已建立，排空 ' + __pendingConsoleMessages.length + ' 条缓存消息')
-        _chatStoreBridge.addMessages(__pendingConsoleMessages)
+        _chatStoreBridge.addMessagesRaw(__pendingConsoleMessages)
         __pendingConsoleMessages = []
     }
 }
@@ -51,18 +73,28 @@ console.log('[store.js] 脚本加载，准备注册 console 监听器')
 on('console', (msgs) => {
     console.log('[store.js] console 回调触发, count=' + msgs.length)
 
+    // 检测系统消息：JSBridge 模式下消息为纯文本，需按特征判定类型
+    var parsed = msgs.map(function(m) {
+        var isSystem = _isConsoleSystemMsg(m)
+        return { text: m, type: isSystem ? 'system' : undefined }
+    })
+
     // 写入 Pinia chatStore（若已桥接）；未就绪时先缓存，setChatStoreBridge 时自动排空
     if (_chatStoreBridge) {
-        _chatStoreBridge.addMessages(msgs)
+        _chatStoreBridge.addMessagesRaw(parsed)
     } else {
-        console.log('[store.js] 桥接未就绪，缓存 ' + msgs.length + ' 条消息到队列')
-        __pendingConsoleMessages.push(...msgs)
+        console.log('[store.js] 桥接未就绪，缓存 ' + parsed.length + ' 条消息到队列')
+        __pendingConsoleMessages.push(...parsed)
     }
 
     // 兼容旧 state.messages（其他组件可能引用）
-    msgs.forEach(function (m) {
-        console.log('[store.js] 追加消息: ' + (typeof m === 'string' ? m.substring(0, 80) : JSON.stringify(m).substring(0, 80)))
-        state.messages.push({ text: m, time: new Date().toLocaleTimeString() })
+    parsed.forEach(function (m) {
+        console.log('[store.js] 追加消息: ' + (typeof m.text === 'string' ? m.text.substring(0, 80) : JSON.stringify(m).substring(0, 80)))
+        state.messages.push({
+            text: m.text,
+            time: new Date().toLocaleTimeString(),
+            type: m.type
+        })
     })
     if (state.messages.length > 1000) {
         state.messages.splice(0, state.messages.length - 1000)
@@ -99,11 +131,15 @@ on('gameRoom', (data) => {
     handleRoomEvent(data)
 })
 on('message', (data) => {
-    const redText = '<font color=red>' + data.text + '</font>'
+    var isSystem = data.type === 'system'
+    // 用户消息格式：[昵称] 内容
+    var displayText = isSystem ? data.text : (data.user ? '[' + data.user.username + '] ' + data.text : data.text)
+    var displayType = isSystem ? 'system' : undefined
+
     if (_chatStoreBridge) {
-        _chatStoreBridge.addMessage(redText, 'system')
+        _chatStoreBridge.addMessage(displayText, displayType)
     }
-    state.messages.push({ text: redText, time: new Date().toLocaleTimeString(), type: 'system' })
+    state.messages.push({ text: displayText, time: new Date().toLocaleTimeString(), type: displayType })
     nextTick(() => {
         const el = document.querySelector('.message-list')
         if (el) el.scrollTop = el.scrollHeight

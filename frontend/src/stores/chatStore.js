@@ -47,6 +47,23 @@ export const useChatStore = defineStore('chat', {
     },
 
     /**
+     * 批量添加带类型标记的消息（来自 JSBridge console，已由 store.js 解析 type）
+     * @param {Array<{text: string, type: string|undefined}>} parsed
+     */
+    addMessagesRaw(parsed) {
+      parsed.forEach(p => {
+        this.messages.push({
+          text: p.text,
+          time: new Date().toLocaleTimeString(),
+          type: p.type
+        })
+      })
+      if (this.messages.length > 1000) {
+        this.messages.splice(0, this.messages.length - 1000)
+      }
+    },
+
+    /**
      * 清空消息
      */
     clear() {

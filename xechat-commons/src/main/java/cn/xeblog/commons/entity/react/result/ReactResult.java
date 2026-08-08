@@ -3,12 +3,14 @@ package cn.xeblog.commons.entity.react.result;
 import cn.xeblog.commons.entity.react.BaseReact;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
  * @author anlingyi
  * @date 2022/9/19 8:21 AM
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
