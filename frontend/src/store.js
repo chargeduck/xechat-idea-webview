@@ -301,6 +301,16 @@ export function refreshState() {
         state.onlineCount = s.onlineCount
         state.toolOpen = s.toolOpen
         state.currentTool = s.currentTool
+
+        // JSBridge 模式：同步加载在线用户列表
+        if (getMode() === 'jsbridge' && window.xechat && window.xechat.getOnlineUsers) {
+            try {
+                const users = JSON.parse(window.xechat.getOnlineUsers())
+                if (Array.isArray(users) && users.length > 0) {
+                    useOnlineUsersStore().setUsers(users)
+                }
+            } catch (e2) { /* ignore */}
+        }
     } catch (e) { /* ignore */}
 }
 

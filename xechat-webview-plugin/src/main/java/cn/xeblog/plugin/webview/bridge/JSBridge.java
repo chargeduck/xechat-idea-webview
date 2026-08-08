@@ -55,6 +55,8 @@ public class JSBridge {
     private String cachedGames;
     private String cachedReadConfig;
     private boolean cachedIsPlaying;
+    private String cachedOnlineUsers;
+    private String lastPushedOnlineUsersJson;
 
     public JSBridge(WebViewPanel panel) {
         this.panel = panel;
@@ -125,6 +127,8 @@ public class JSBridge {
         cachedGames = buildGamesJson();
         cachedReadConfig = gson.toJson(DataCache.readConfig);
         cachedIsPlaying = GameAction.playing();
+        cachedOnlineUsers = gson.toJson(new ArrayList<>(DataCache.userMap != null
+                ? DataCache.userMap.values() : Collections.emptyList()));
     }
 
     /**
@@ -139,6 +143,7 @@ public class JSBridge {
         var gamesJson = escapeForJS(cachedGames);
         var readJson = escapeForJS(cachedReadConfig);
         var isPlaying = String.valueOf(cachedIsPlaying);
+        var onlineUsersJson = escapeForJS(cachedOnlineUsers);
 
         return /* @formatter:off */
             """
@@ -149,6 +154,7 @@ public class JSBridge {
                 var __games=%s;
                 var __readConfig=%s;
                 var __isPlaying=%s;
+                var __onlineUsers=%s;
 
                 var __pendingCalls=[];
                 function _tryFlush(){
@@ -200,6 +206,7 @@ public class JSBridge {
                 _x.gameAction=function(a){_call('gameAction',[a]);};
                 _x.exitGame=function(){_call('exitGame');};
                 _x.isPlaying=function(){return __isPlaying;};
+                _x.getOnlineUsers=function(){return JSON.stringify(__onlineUsers);};
                 _x.roomReady=function(){_call('roomReady');};
                 _x.roomUnready=function(){_call('roomUnready');};
                 _x.roomInvite=function(u){_call('roomInvite',[u]);};
@@ -218,11 +225,12 @@ public class JSBridge {
                     if(data.games)__games=data.games;
                     if(data.readConfig!==undefined)__readConfig=data.readConfig;
                     if(data.isPlaying!==undefined)__isPlaying=data.isPlaying;
+                    if(data.onlineUsers!==undefined)__onlineUsers=data.onlineUsers;
                 };
                 window.xechat=_x;
                 console.log('[JSBridge] 注入完成, cefQuery='+(typeof window.cefQuery)+', xechat keys='+Object.keys(_x).join(','));
             })();
-            """.formatted(stateJson, configJson, toolsJson, gamesJson, readJson, isPlaying);
+            """.formatted(stateJson, configJson, toolsJson, gamesJson, readJson, isPlaying, onlineUsersJson);
             /* @formatter:on */
     }
 
@@ -539,9 +547,9 @@ public class JSBridge {
      */
     private void syncCache() {
         refreshCache();
-        var cacheJs = "window.xechat&&window.xechat._updateCache({state:%s,config:%s,tools:%s,games:%s,readConfig:%s,isPlaying:%s})"
+        var cacheJs = "window.xechat&&window.xechat._updateCache({state:%s,config:%s,tools:%s,games:%s,readConfig:%s,isPlaying:%s,onlineUsers:%s})"
                 .formatted(cachedState, cachedConfig, cachedTools, cachedGames, cachedReadConfig,
-                        String.valueOf(cachedIsPlaying));
+                        String.valueOf(cachedIsPlaying), cachedOnlineUsers);
         panel.executeJS(cacheJs);
     }
 
@@ -562,6 +570,15 @@ public class JSBridge {
                     log.info("[JSBridge] 轮询到 {} 条消息，准备推送\n{}", messages.size(),messages);
                     pushEvent("console", messages);
                     log.info("[JSBridge] console 事件已推送");
+                }
+
+                // 检测在线用户列表变化并推送
+                var users = new ArrayList<>(DataCache.userMap != null
+                        ? DataCache.userMap.values() : Collections.emptyList());
+                var currentJson = gson.toJson(users);
+                if (!currentJson.equals(lastPushedOnlineUsersJson)) {
+                    lastPushedOnlineUsersJson = currentJson;
+                    pushEvent("onlineUsers", Map.of("userList", users));
                 }
             } catch (Exception e) {
                 log.error("[JSBridge] 轮询异常", e);
