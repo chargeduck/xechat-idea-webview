@@ -26,12 +26,6 @@
           当前：{{ currentTransportMode }} | 切换后需刷新页面生效
         </div>
       </el-form-item>
-      <el-form-item label="Markdown 编辑器">
-        <el-select v-model="localMdEditor" @change="onMdEditorChange" style="width: 100%" size="small">
-          <el-option label="v-md-editor" value="v-md-editor" />
-          <el-option label="ByteMD（字节跳动）" value="bytemd" />
-        </el-select>
-      </el-form-item>
       <div class="setting-row">
         <span>在线状态</span>
         <el-tag :type="state.online ? 'success' : 'info'" size="small">
@@ -47,10 +41,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { state } from '../store.js'
 import { isDark, toggleTheme } from '../composables/useTheme.js'
 import { getConfiguredMode } from '../api.js'
+import { useSettingsStore } from '../stores/settingsStore.js'
 
 defineProps({
   modelValue: { type: Boolean, default: false }
@@ -58,18 +53,16 @@ defineProps({
 
 defineEmits(['update:modelValue'])
 
+const settingsStore = useSettingsStore()
 const currentTransportMode = ref(getConfiguredMode())
-const localTransportMode = ref(localStorage.getItem('xechat_transport_mode') || 'auto')
+
+const localTransportMode = computed({
+  get: () => settingsStore.transportMode,
+  set: (val) => settingsStore.setTransportMode(val)
+})
 
 function onTransportModeChange(val) {
-  localStorage.setItem('xechat_transport_mode', val)
   currentTransportMode.value = val
-}
-
-const localMdEditor = ref(localStorage.getItem('xechat_md_editor') || 'v-md-editor')
-
-function onMdEditorChange(val) {
-  localStorage.setItem('xechat_md_editor', val)
 }
 </script>
 

@@ -1,19 +1,20 @@
 ########## server配置 ##########
 [SERVER]
 # 端口
-port = 1024
+port = 33858
 # 是否开启WS协议
 enableWS = true
 
 ########## 敏感词配置 ##########
 [SENSITIVE_WORD]
 # 词库文件路径
-file = ${SW_FILE}
+file = /opt/apps/xechat-server/data/db/keywords.txt
 
 ########## 天气查询配置 ##########
 [WEATHER]
 # 和风天气 api key
-key = ${WEATHER_KEY}
+projectId=472GUCQDJD
+tokenId=CEGW8WGKB3
 
 ########## 翻译配置 ##########
 [TRANSLATION]
@@ -26,9 +27,9 @@ appKey = ${BD_APP_KEY}
 [IP_SEARCH]
 # ip2region
 # 下载地址：https://gitee.com/lionsoul/ip2region/tree/master/data
-ip2Region_path = /home/xechat/db/ip2region.xdb
+ip2Region_path = /opt/apps/xechat-server/data/db/ip2region.xdb
 
 ########## 管理员配置 ##########
 [ADMIN]
 # 管理员令牌
-token = ${TOKEN}
+token = LeftWing.8-

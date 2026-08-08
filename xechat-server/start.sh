@@ -5,7 +5,7 @@
 set -e
 
 APP_DIR="/opt/apps/xechat-server"
-JAR_FILE="$APP_DIR/app.jar"
+JAR_FILE="$APP_DIR/xechat-server-2.0.0.jar"
 CONFIG_FILE="$APP_DIR/config.setting"
 LOG_CONFIG="$APP_DIR/logback.xml"
 PID_FILE="$APP_DIR/server.pid"
@@ -32,6 +32,7 @@ start)
         exit 0
     fi
 
+    cd "$APP_DIR"
     mkdir -p "$LOG_DIR"
     echo -n "启动 xechat-server ... "
 

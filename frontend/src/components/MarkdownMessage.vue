@@ -18,12 +18,15 @@ const md = new MarkdownIt({
 })
 
 // VitePress 风格提示块：::: info / ::: warn / ::: error
-function createContainer(type, label) {
+function createContainer(type, defaultLabel) {
   md.use(container, type, {
-    validate: () => true,
+    validate: (params) => params.trim().split(' ', 1)[0] === type,
     render: (tokens, idx) => {
       const token = tokens[idx]
       if (token.nesting === 1) {
+        // 从 info 中提取自定义标题：::: info XEChat → 标题为 XEChat
+        const infoParts = token.info.trim().split(' ')
+        const label = infoParts.length > 1 ? infoParts.slice(1).join(' ') : defaultLabel
         return `<div class="admonition ${type}">\n<p class="admonition-title">${label}</p>\n`
       }
       return '</div>\n'
@@ -42,7 +45,6 @@ md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
 }
 
 function preprocessFont(text) {
-  // <font color=...> 转为 <span style="color:...">
   return text.replace(/<font\s+color=(['"]?)(\w+)\1\s*>(.*?)<\/font>/g,
     (_, _q, color, content) => `<span style="color:${color}">${content}</span>`
   )

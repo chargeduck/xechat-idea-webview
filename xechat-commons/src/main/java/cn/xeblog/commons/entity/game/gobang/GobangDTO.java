@@ -3,12 +3,14 @@ package cn.xeblog.commons.entity.game.gobang;
 import cn.xeblog.commons.entity.game.GameDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
  * @author anlingyi
  * @date 2020/6/5
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -3,7 +3,8 @@ FROM eclipse-temurin:21-jre
 WORKDIR /opt/apps/xechat-server
 
 # 胖 jar（maven-assembly-plugin 产物）
-COPY target/xechat-server-2.0.0.jar app.jar
+# 胖 jar（maven-assembly-plugin 产物，保留原始文件名）
+COPY target/xechat-server-2.0.0.jar .
 
 # 外部配置（覆盖 classpath 默认值，ip2Region_path 已指向本目录）
 COPY config.setting .
@@ -24,5 +25,5 @@ VOLUME ["/opt/apps/xechat-server/data", "/opt/apps/xechat-server/logs", "/opt/ap
 # -Dlogback.configurationFile 使用外部日志配置，-path 使用外部 server 配置
 ENTRYPOINT ["java", \
     "-Dlogback.configurationFile=logback.xml", \
-    "-jar", "app.jar", \
+    "-jar", "xechat-server-2.0.0.jar", \
     "-path", "config.setting"]

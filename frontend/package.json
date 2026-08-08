@@ -9,12 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@bytemd/plugin-gfm": "^1.22.0",
-    "@bytemd/plugin-highlight": "^1.22.0",
-    "@bytemd/vue-next": "^1.22.0",
     "@element-plus/icons-vue": "^2.3.1",
-    "@kangc/v-md-editor": "^2.3.18",
-    "bytemd": "^1.22.0",
     "element-plus": "^2.9.7",
     "markdown-it": "^15.0.0",
     "markdown-it-container": "^4.0.0",

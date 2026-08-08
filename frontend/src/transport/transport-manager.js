@@ -1,11 +1,9 @@
 import { JSBridgeTransport } from './transport-jsbridge.js'
 import { WebSocketTransport } from './transport-websocket.js'
 
-var STORAGE_KEY = 'xechat_transport_mode'
-
 /**
  * Transport Manager — auto-selects JSBridge or WebSocket.
- * Mode priority: explicit config > localStorage > auto-detect.
+ * Mode priority: explicit config > settingsStore > auto-detect.
  */
 class TransportManager {
   constructor() {
@@ -16,7 +14,7 @@ class TransportManager {
 
   async init(config) {
     config = config || {}
-    var storedMode = (typeof localStorage !== 'undefined') ? localStorage.getItem(STORAGE_KEY) : null
+    var storedMode = this._readStoredMode()
     this._mode = config.mode || storedMode || 'auto'
 
     var useWS = false
@@ -77,6 +75,17 @@ class TransportManager {
 
   disconnect() {
     if (this._transport) { this._transport.disconnect(); this._transport = null }
+  }
+
+  /** 从持久化存储读取传输模式，同时兼容新旧 storage key */
+  _readStoredMode() {
+    if (typeof localStorage === 'undefined') return null
+    // 优先读 Pinia settingsStore 用的新键，兼容旧键 'xechat_transport_mode'
+    try {
+      var raw = localStorage.getItem('xechat_settings_v1')
+      if (raw) return JSON.parse(raw).transportMode
+    } catch (e) {}
+    return localStorage.getItem('xechat_transport_mode')
   }
 }
 

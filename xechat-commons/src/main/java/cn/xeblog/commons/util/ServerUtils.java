@@ -20,7 +20,7 @@ public class ServerUtils {
     /**
      * 服务器url列表
      */
-    private static final String SERVER_LIST_URL = "https://gitee.com/chargeduck/xechat-idea/raw/main/server_list.json";
+    private static final String SERVER_LIST_URL = "https://gitee.com/chargeduck/xechat-idea-webview/raw/main/server_list.json";
 
     /**
      * 获取服务器列表

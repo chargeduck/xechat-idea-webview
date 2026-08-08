@@ -2,7 +2,13 @@
   <div class="chat-panel">
     <div class="message-list" ref="messageListRef">
       <div v-for="(msg, idx) in chatStore.messages" :key="idx" class="message-item">
-        <MarkdownMessage :content="msg.text" />
+        <!-- 系统消息：VitePress 风格彩色容器块 -->
+        <div v-if="msg.type === 'system'" :class="['system-msg-box', classifySystemMsg(msg.text)]">
+          <span class="system-msg-icon">{{ systemMsgIcon(msg.text) }}</span>
+          <span class="system-msg-text">{{ stripHtml(msg.text) }}</span>
+        </div>
+        <!-- 普通消息：Markdown 渲染 -->
+        <MarkdownMessage v-else :content="msg.text" />
       </div>
       <div v-if="chatStore.isEmpty" class="empty-hint">
         暂无消息
@@ -30,6 +36,7 @@
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from '../stores/chatStore'
+import { useDeviceStore } from '../stores/deviceStore'
 import { useHelpStore } from '../stores/helpStore'
 import { useServerStore } from '../stores/serverStore'
 import { setChatStoreBridge } from '../store.js'
@@ -38,6 +45,7 @@ import MarkdownMessage from './MarkdownMessage.vue'
 import StyleSelector from './StyleSelector.vue'
 
 const chatStore = useChatStore()
+const deviceStore = useDeviceStore()
 const helpStore = useHelpStore()
 const serverStore = useServerStore()
 
@@ -53,6 +61,34 @@ watch(() => chatStore.messages.length, (newLen, oldLen) => {
     if (el) el.scrollTop = el.scrollHeight
   })
 })
+
+/**
+ * 剥离 HTML 标签，获取纯文本
+ */
+function stripHtml(text) {
+  return text.replace(/<[^>]+>/g, '')
+}
+
+/**
+ * 根据系统消息内容分类，返回 CSS class 名
+ * - error: 错误/警告类（版本过低、错误、失败、异常、超时、断开、拒绝）
+ * - notice: 进入/离开通知类（进入、离开、加入、退出、上线、下线）
+ * - info:  普通系统消息（公告、格言等）
+ */
+function classifySystemMsg(text) {
+  const plain = stripHtml(text)
+  if (/版本过低|错误|失败|异常|超时|断开|拒绝|禁止|无效|过期/.test(plain)) return 'error'
+  if (/进入|离开|加入|退出|上线|下线|来到了|离开了/.test(plain)) return 'notice'
+  return 'info'
+}
+
+/** 系统消息类型图标 */
+function systemMsgIcon(text) {
+  const cls = classifySystemMsg(text)
+  if (cls === 'error') return '\u26A0'   // ⚠
+  if (cls === 'notice') return '\u2192'  // →
+  return '\u2139'                         // ℹ
+}
 
 // 文字样式选中：将当前输入文本包裹为样式标签
 function onStyleSelect(tag) {
@@ -136,7 +172,7 @@ async function handleLogin(rawText) {
       username: username,
       status: 'FISHING',
       platform: 'WEB',
-      uuid: localStorage.getItem('xechat_uuid') || ('web-' + Math.random().toString(36).substring(2) + Date.now().toString(36)),
+      uuid: deviceStore.uuid,
       pluginVersion: (srv && srv.version) || '',
       reconnected: false
     }
@@ -225,6 +261,51 @@ onMounted(() => {
 .message-item {
   padding: 4px 0;
   border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== 系统消息：VitePress 风格彩色容器块 ===== */
+.system-msg-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 4px 0;
+  padding: 6px 12px 6px 10px;
+  border-left: 4px solid;
+  border-radius: 0 4px 4px 0;
+  font-size: 12px;
+  line-height: 1.5;
+
+  .system-msg-icon {
+    flex-shrink: 0;
+    font-size: 13px;
+    margin-top: 1px;
+  }
+  .system-msg-text {
+    flex: 1;
+  }
+
+  &.error {
+    border-color: var(--danger-color);
+    background: rgba(244, 71, 71, 0.08);
+    .system-msg-icon { color: var(--danger-color); }
+  }
+  &.notice {
+    border-color: var(--success-color);
+    background: rgba(78, 201, 176, 0.08);
+    .system-msg-icon { color: var(--success-color); }
+  }
+  &.info {
+    border-color: var(--accent-color);
+    background: rgba(0, 122, 204, 0.08);
+    .system-msg-icon { color: var(--accent-color); }
+  }
+}
+
+/* 浅色主题下系统消息背景微调 */
+:root.light .system-msg-box {
+  &.error  { background: rgba(244, 71, 71, 0.06); }
+  &.notice { background: rgba(78, 201, 176, 0.06); }
+  &.info   { background: rgba(0, 120, 212, 0.06); }
 }
 
 .message-item:last-child {
