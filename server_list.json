@@ -1,0 +1,15 @@
+
+[
+    {
+        "name": "充电鸭鱼塘",
+        "ip": "lesscoding.net",
+        "port": 33858,
+        "version": "2.0.0"
+    },
+    {
+        "name": "官方魚塘",
+        "ip": "xechat.xeblog.cn",
+        "port": 33858,
+        "version": "v1.6.7-beta"
+    }
+]

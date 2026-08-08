@@ -7,17 +7,29 @@ group 'cn.xeblog'
 version '2.0.0-beta'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+// 将 xechat-commons 源码直接纳入编译，改一处立刻生效，无需 mvn install
+sourceSets {
+    main {
+        java {
+            srcDirs += ['../xechat-commons/src/main/java']
+        }
+    }
 }
 
 ext {
-    xechatCommonsVersion = '1.6.7-beta'
+    xechatCommonsVersion = '2.0.0'
     lombokVersion = '1.18.34'
     jxBrowserVersion = '7.22'
     gsonVersion = '2.13.2'
     junitVersion = '4.13.2'
     hutoolVersion = '5.8.32'
+    nettyVersion = '4.1.77.Final'
+    protostuffVersion = '1.8.0'
+    lunarVersion = '1.2.24'
 }
 
 repositories {
@@ -42,14 +54,16 @@ dependencies {
 
     testImplementation "junit:junit:$junitVersion"
 
-    // xechat-commons：共享协议/实体，插件代码直接引用 Game/Action/User 等类，必须打包
-    // 排除日志传递依赖，避免与 IDEA 自带的 slf4j-reload4j 冲突
-    implementation("cn.xeblog:xechat-commons:$xechatCommonsVersion") {
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
-        exclude group: 'org.slf4j', module: 'log4j-over-slf4j'
-        exclude group: 'log4j', module: 'log4j'
-        exclude group: 'ch.qos.reload4j', module: 'reload4j'
-    }
+    // xechat-commons：源码直接纳入编译，无需 mvn install
+    // Netty（xechat-commons 协议层依赖）
+    implementation "io.netty:netty-all:$nettyVersion"
+    // Protostuff（xechat-commons 序列化依赖）
+    implementation "io.protostuff:protostuff-core:$protostuffVersion"
+    implementation "io.protostuff:protostuff-runtime:$protostuffVersion"
+    // lunar（农历工具，xechat-commons 依赖）
+    implementation "cn.6tail:lunar:$lunarVersion"
+    // logback：仅编译时需要，运行时由 IDEA 自带的 SLF4J 绑定接管
+    compileOnly "ch.qos.logback:logback-classic:1.2.11"
 
     // JxBrowser：compileOnly，运行时从 CDN 动态下载到插件目录加载
     compileOnly "com.teamdev.jxbrowser:jxbrowser:$jxBrowserVersion"

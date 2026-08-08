@@ -36,7 +36,7 @@ public class ConfigUtil {
         final String token = ParamsUtils.getValue(args, "-token");
         final String enableWS = ParamsUtils.getValue(args, "-enableWS");
 
-        final Setting configSetting = new Setting(StrUtil.blankToDefault(configPath, "config.setting"), StandardCharsets.UTF_8, Boolean.TRUE);
+        final var configSetting = new Setting(StrUtil.blankToDefault(configPath, "config.setting"), StandardCharsets.UTF_8, Boolean.TRUE);
         final String fileConfigPort = configSetting.getByGroup(ConfigConstants.SERVER_PORT, ConfigConstants.SERVER);
         final String fileSensitiveWordFilePath = configSetting.getByGroup(ConfigConstants.SENSITIVE_WORD_FILE, ConfigConstants.SENSITIVE_WORD);
         final String fileWeatherKey = configSetting.getByGroup(ConfigConstants.WEATHER_KEY, ConfigConstants.WEATHER);

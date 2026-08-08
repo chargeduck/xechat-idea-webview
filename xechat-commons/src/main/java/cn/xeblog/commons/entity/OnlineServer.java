@@ -32,6 +32,11 @@ public class OnlineServer {
      */
     private Integer port;
 
+    /**
+     * 鱼塘服务端版本号
+     */
+    private String version;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

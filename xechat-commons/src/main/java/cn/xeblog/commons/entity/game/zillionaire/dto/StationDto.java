@@ -55,15 +55,11 @@ public class StationDto extends PositionDto{
     }
 
     public Integer getToll(){
-        switch (level) {
-            case 2 :
-                return twoStationPrice;
-            case 3:
-                return threeStationPrice;
-            case 4 :
-                return fourStationPrice;
-            default:
-                return oneStationPrice;
-        }
+        return switch (level) {
+            case 2 -> twoStationPrice;
+            case 3 -> threeStationPrice;
+            case 4 -> fourStationPrice;
+            default -> oneStationPrice;
+        };
     }
 }

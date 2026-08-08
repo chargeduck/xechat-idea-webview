@@ -41,7 +41,7 @@ public class Ip2RegionServiceImpl extends AbstractIpRegionService implements IpR
 
     @Override
     public IpRegion getRegion(String ip) {
-        IpRegion ipRegion = new IpRegion(ip);
+        var ipRegion = new IpRegion(ip);
         try {
             // if (NetUtil.isValidIpV4Address(ip)) {
             //     throw new RuntimeException("无效的IP地址");

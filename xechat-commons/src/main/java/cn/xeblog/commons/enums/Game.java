@@ -21,9 +21,10 @@ public enum Game {
     CHINESE_CHESS("中国象棋", false),
     TETRIS("俄罗斯方块", false),
     MINESWEEPER("扫雷", false),
-    IKUN("爱坤大乐斗", false),
-    UNO("UNO", false),
-    MONOPOLY("大富翁", false),
+    IKUN("爱坤大乐斗", true),
+    UNO("UNO", true),
+    MONOPOLY("大富翁", true),
+    MAHJONG("爱坤麻将", true)
     ;
 
     /**

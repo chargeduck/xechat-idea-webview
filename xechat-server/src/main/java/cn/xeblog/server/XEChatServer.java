@@ -72,7 +72,7 @@ public class XEChatServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup(threads);
         EventLoopGroup workGroup = new NioEventLoopGroup();
 
-        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        var serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new DefaultChannelInitializer(sslContext))
@@ -141,10 +141,10 @@ public class XEChatServer {
             // 后期可根据实例化实例不同的实现
             final IpRegionService ip2RegionService = new Ip2RegionServiceImpl(IpRegionProperties.builder().ip2regionDbPath(ip2regionPath).build());
 
-            final IpUtil ipUtil = new IpUtil(ip2RegionService);
+            final var ipUtil = new IpUtil(ip2RegionService);
         }
 
-        XEChatServer server = new XEChatServer(serverConfig.getPort());
+        var server = new XEChatServer(serverConfig.getPort());
         server.enableWS = serverConfig.getEnableWS();
         server.run();
     }

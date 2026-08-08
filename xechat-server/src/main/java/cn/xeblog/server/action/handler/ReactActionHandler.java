@@ -21,7 +21,7 @@ public class ReactActionHandler implements ActionHandler<ReactRequest> {
 
     @Override
     public void handle(ChannelHandlerContext ctx, ReactRequest request) {
-        ReactResult result = new ReactResult();
+        var result = new ReactResult();
         result.setSucceed(false);
         result.setId(request.getId());
         result.setUid(request.getUid());

@@ -21,7 +21,7 @@ public abstract class AbstractResponseHistoryService {
     public abstract List<Response> getHistory(int limit);
 
     protected Response clone(Response origin) {
-        Response resp = new Response();
+        var resp = new Response();
         resp.setBody(origin.getBody());
         resp.setTime(origin.getTime());
         resp.setType(origin.getType());

@@ -68,7 +68,7 @@ public class IpRegion {
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        var sb = new StringBuffer();
         // sb.append(ip)
         //         .append(" ")
         sb.append((null == country || "0".equals(country)) ? "" : country)

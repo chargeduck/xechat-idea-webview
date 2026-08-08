@@ -18,7 +18,7 @@ public class WebSocketMessageEncoder extends MessageToMessageEncoder<Response> {
 
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, Response response, List<Object> list) throws Exception {
-        TextWebSocketFrame frame = new TextWebSocketFrame(JSONUtil.toJsonStr(response));
+        var frame = new TextWebSocketFrame(JSONUtil.toJsonStr(response));
         list.add(frame);
     }
 

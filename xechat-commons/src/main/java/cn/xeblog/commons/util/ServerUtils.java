@@ -31,7 +31,7 @@ public class ServerUtils {
     public static List<OnlineServer> getServerList() {
         String resp = HttpUtil.get(SERVER_LIST_URL);
         if (StrUtil.isBlank(resp)) {
-            return Collections.emptyList();
+            return List.of();
         }
         return JSONUtil.toBean(resp, new TypeReference<List<OnlineServer>>() {
         }.getType(), Boolean.FALSE);

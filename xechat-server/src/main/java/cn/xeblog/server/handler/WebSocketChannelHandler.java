@@ -17,9 +17,9 @@ public class WebSocketChannelHandler extends AbstractDefaultChannelHandler<WebSo
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
-        if (frame instanceof TextWebSocketFrame) {
+        if (frame instanceof TextWebSocketFrame tf) {
             try {
-                Request msg = JSONUtil.toBean(((TextWebSocketFrame) frame).text(), Request.class);
+                Request msg = JSONUtil.toBean(tf.text(), Request.class);
                 msg.setProtocol(Protocol.WEBSOCKET);
                 new RequestHandler(ctx, msg).exec();
             } catch (Exception e) {

@@ -53,7 +53,7 @@ public class ClassUtils {
                     return true;
                 });
             } else {
-                JarFile jar = new JarFile(path);
+                var jar = new JarFile(path);
                 Enumeration<JarEntry> entryEnumeration = jar.entries();
                 while (entryEnumeration.hasMoreElements()) {
                     JarEntry entry = entryEnumeration.nextElement();

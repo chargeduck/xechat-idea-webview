@@ -193,7 +193,7 @@ public class HeFengWeatherServiceImpl implements WeatherService {
             DateTime fxDate = DateUtil.parse(v.getFxDate(), DatePattern.NORM_DATE_PATTERN);
             v.setWeek(CHINESE_WEEK_NAME[fxDate.dayOfWeek() - 1]);
             return v;
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
 }

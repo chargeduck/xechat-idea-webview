@@ -38,8 +38,7 @@ public abstract class AbstractDefaultChannelHandler<T> extends SimpleChannelInbo
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            IdleStateEvent event = (IdleStateEvent) evt;
+        if (evt instanceof IdleStateEvent event) {
             if (event.state() == IdleState.ALL_IDLE) {
                 ctx.close();
             }

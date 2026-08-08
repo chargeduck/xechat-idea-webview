@@ -62,7 +62,7 @@ public class GameRoomActionHandler extends AbstractGameActionHandler<GameRoomMsg
     private void roomClose(User user, GameRoom gameRoom) {
         GameRoomCache.removeRoom(gameRoom.getId());
 
-        GameRoomMsgDTO msg = new GameRoomMsgDTO();
+        var msg = new GameRoomMsgDTO();
         msg.setRoomId(gameRoom.getId());
         msg.setMsgType(GameRoomMsgDTO.MsgType.ROOM_CLOSE);
 
@@ -116,7 +116,7 @@ public class GameRoomActionHandler extends AbstractGameActionHandler<GameRoomMsg
             return;
         }
 
-        GameRoomMsgDTO msg = new GameRoomMsgDTO();
+        var msg = new GameRoomMsgDTO();
         msg.setGame(gameRoom.getGame());
         msg.setRoomId(gameRoom.getId());
         if (player.getStatus() != UserStatus.FISHING) {

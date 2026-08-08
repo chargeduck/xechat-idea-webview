@@ -137,7 +137,7 @@ async function handleLogin(rawText) {
       status: 'FISHING',
       platform: 'WEB',
       uuid: localStorage.getItem('xechat_uuid') || ('web-' + Math.random().toString(36).substring(2) + Date.now().toString(36)),
-      pluginVersion: '',
+      pluginVersion: (srv && srv.version) || '',
       reconnected: false
     }
   }

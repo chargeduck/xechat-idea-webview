@@ -26,7 +26,7 @@ public class DownloadReactHandler extends AbstractReactHandler<DownloadReact, Do
                 return;
             }
 
-            DownloadReactResult data = new DownloadReactResult();
+            var data = new DownloadReactResult();
             data.setFileName(body.getFileName());
             data.setBytes(bytes);
             result.setData(data);

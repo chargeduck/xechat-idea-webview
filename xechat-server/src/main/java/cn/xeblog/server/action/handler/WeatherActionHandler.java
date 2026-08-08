@@ -63,7 +63,7 @@ public class WeatherActionHandler extends AbstractActionHandler<WeatherDTO> {
             return;
         }
 
-        ConsoleTable consoleTable = new ConsoleTable();
+        var consoleTable = new ConsoleTable();
         consoleTable.setSBCMode(Boolean.FALSE);
         if (null != weatherNow) {
             consoleTable.addHeader("日期", "天气", "当前温度", "体感温度");

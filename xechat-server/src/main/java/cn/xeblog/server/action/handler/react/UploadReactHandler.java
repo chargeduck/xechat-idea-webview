@@ -46,18 +46,18 @@ public class UploadReactHandler extends AbstractReactHandler<UploadReact, Upload
         } else {
             String filePath = GlobalConfig.UPLOAD_FILE_PATH;
             String filename = IdUtil.fastUUID() + "." + body.getFileType();
-            File imageFile = new File(filePath + "/" + filename);
+            var imageFile = new File(filePath + "/" + filename);
             if (!imageFile.exists()) {
                 FileUtil.mkdir(filePath);
-                try (FileOutputStream out = new FileOutputStream(imageFile)) {
+                try (var out = new FileOutputStream(imageFile)) {
                     out.write(body.getBytes());
 
-                    UploadReactResult data = new UploadReactResult();
+                    var data = new UploadReactResult();
                     data.setFileName(filename);
                     result.setData(data);
                     result.setSucceed(true);
 
-                    UserMsgDTO dto = new UserMsgDTO();
+                    var dto = new UserMsgDTO();
                     dto.setMsgType(UserMsgDTO.MsgType.IMAGE);
                     dto.setContent(filename);
                     ChannelAction.send(user, dto, MessageType.USER);

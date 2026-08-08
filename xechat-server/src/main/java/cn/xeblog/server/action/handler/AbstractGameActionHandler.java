@@ -29,8 +29,7 @@ public abstract class AbstractGameActionHandler<T extends GameDTO> extends Abstr
             gameRoom = GameRoomCache.getGameRoom(body.getRoomId());
         }
         if (gameRoom == null) {
-            if (body instanceof GameRoomMsgDTO) {
-                GameRoomMsgDTO gameRoomMsgDTO = (GameRoomMsgDTO) body;
+            if (body instanceof GameRoomMsgDTO gameRoomMsgDTO) {
                 if (gameRoomMsgDTO.getMsgType() == GameRoomMsgDTO.MsgType.PLAYER_INVITE_RESULT) {
                     GameInviteResultDTO gameInviteResultDTO = (GameInviteResultDTO) gameRoomMsgDTO.getContent();
                     if (gameInviteResultDTO.getStatus() == InviteStatus.TIMEOUT) {

@@ -53,7 +53,11 @@ public class XEChatClientHandler extends SimpleChannelInboundHandler<Response> {
         loginDTO.setUuid(DataCache.uuid);
         loginDTO.setPlatform(Platform.IDEA);
         String ipRegionJson = new Gson().toJson(IpRegionUtil.ipRegion());
-        String versionAndRegion = StrUtil.format("{};{}", IdeaUtils.getPluginVersion(), ipRegionJson);
+        // 优先使用 -s 选中服务器的版本号，否则用 IDEA 插件版本
+        String clientVersion = StrUtil.isNotBlank(DataCache.selectedServerVersion)
+                ? DataCache.selectedServerVersion
+                : IdeaUtils.getPluginVersion();
+        String versionAndRegion = StrUtil.format("{};{}", clientVersion, ipRegionJson);
         loginDTO.setPluginVersion(versionAndRegion);
         MessageAction.send(loginDTO, Action.LOGIN);
         DataCache.reconnected = false;

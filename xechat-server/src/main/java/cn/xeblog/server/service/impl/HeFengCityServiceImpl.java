@@ -30,7 +30,7 @@ public class HeFengCityServiceImpl implements CityService {
                 cityInfo -> StrUtil.contains(cityInfo.getLocationName(), keyword) ||
                         StrUtil.contains(cityInfo.getAdmName1(), keyword) ||
                         StrUtil.contains(cityInfo.getAdmName2(), keyword)
-        ).collect(Collectors.toList());
+        ).toList();
     }
 
     @Override

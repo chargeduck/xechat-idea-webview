@@ -39,7 +39,7 @@ public class GameRoomCache {
             return null;
         }
 
-        GameRoom gameRoom = new GameRoom();
+        var gameRoom = new GameRoom();
         gameRoom.setId(roomId);
         if (GAME_ROOM_MAP.put(roomId, gameRoom) == null) {
             return gameRoom;

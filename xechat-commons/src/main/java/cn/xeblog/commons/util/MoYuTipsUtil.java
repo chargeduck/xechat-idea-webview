@@ -22,15 +22,16 @@ import java.util.*;
  */
 public class MoYuTipsUtil {
 
-    private static final String TIPS_MSG = "【摸鱼总办】提醒您：\n" +
-            "\n" +
-            "{}月{}日 {}好，打工人！{}\n" +
-            "\n" +
-            "距离周末还有{}天\n" +
-            "{}\n" +
-            "{}\n" +
-            "\n" +
-            "欢迎加入摸鱼技术交流群：754126966";
+    private static final String TIPS_MSG = """
+            【摸鱼总办】提醒您：
+
+            {}月{}日 {}好，打工人！{}
+
+            距离周末还有{}天
+            {}
+            {}
+
+            欢迎加入摸鱼技术交流群：754126966""";
 
     private static final List<String> hellos = new ArrayList<String>(3) {{
         add("摸鱼能增加工作动力，摸鱼能放松筋骨舒展神经。人都是被摸鱼摸大的，摸鱼是人的天性，无论是顺境还是逆境，工作摸鱼，才不会被工作抛弃。");
@@ -57,7 +58,7 @@ public class MoYuTipsUtil {
         LocalDateTime nextWeek = now.with(TemporalAdjusters.next(DayOfWeek.of(6)));
 
         Map<String, Long> holidayMap = computeHoliday();
-        StringBuffer fStr = new StringBuffer();
+        var fStr = new StringBuffer();
         holidayMap.forEach((f, l) -> fStr.append(StrUtil.format("距离{}还有{}天\n", f, l)));
 
         return StrUtil.format(TIPS_MSG, now.getMonthValue(), now.getDayOfMonth(), amOrPm(now.getHour()),

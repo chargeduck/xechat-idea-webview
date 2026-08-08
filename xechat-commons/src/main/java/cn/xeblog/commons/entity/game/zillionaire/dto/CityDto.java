@@ -82,19 +82,13 @@ public class CityDto extends PositionDto{
     }
 
     public Integer getToll(Integer level) {
-        switch (level) {
-            case 1:
-                return firstToll;
-            case 2:
-                return secondToll;
-            case 3:
-                return thirdToll;
-            case 4:
-                return fourthToll;
-            case 5:
-                return fifthToll;
-            default:
-                return level > 5 ? fifthToll : zeroToll;
-        }
+        return switch (level) {
+            case 1 -> firstToll;
+            case 2 -> secondToll;
+            case 3 -> thirdToll;
+            case 4 -> fourthToll;
+            case 5 -> fifthToll;
+            default -> level > 5 ? fifthToll : zeroToll;
+        };
     }
 }

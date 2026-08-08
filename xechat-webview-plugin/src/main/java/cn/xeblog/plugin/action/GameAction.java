@@ -4,6 +4,12 @@ import cn.xeblog.commons.entity.game.GameDTO;
 import cn.xeblog.commons.entity.game.GameRoom;
 import cn.xeblog.commons.entity.User;
 import cn.xeblog.commons.entity.Response;
+import cn.xeblog.commons.entity.game.chess.ChessDTO;
+import cn.xeblog.commons.entity.game.gobang.GobangDTO;
+import cn.xeblog.commons.entity.game.landlords.LandlordsGameDTO;
+import cn.xeblog.commons.entity.game.mahjong.MahjongGameDto;
+import cn.xeblog.commons.entity.game.uno.UNOGameDto;
+import cn.xeblog.commons.entity.game.zillionaire.dto.MonopolyGameDto;
 import cn.xeblog.commons.enums.Action;
 import cn.xeblog.commons.enums.Game;
 import cn.xeblog.plugin.game.AbstractGame;
@@ -198,22 +204,15 @@ public class GameAction {
      */
     @SuppressWarnings("unchecked")
     private static Class<? extends GameDTO> getDtoClass(Game game) {
-        switch (game) {
-            case CHINESE_CHESS:
-                return (Class) cn.xeblog.commons.entity.game.chess.ChessDTO.class;
-            case GOBANG:
-                return (Class) cn.xeblog.commons.entity.game.gobang.GobangDTO.class;
-            case LANDLORDS:
-                return (Class) cn.xeblog.commons.entity.game.landlords.LandlordsGameDTO.class;
-            case MAHJONG:
-                return (Class) cn.xeblog.commons.entity.game.mahjong.MahjongGameDto.class;
-            case UNO:
-                return (Class) cn.xeblog.commons.entity.game.uno.UNOGameDto.class;
-            case MONOPOLY:
-                return (Class) cn.xeblog.commons.entity.game.zillionaire.dto.MonopolyGameDto.class;
-            default:
-                return GameDTO.class;
-        }
+        return switch (game) {
+            case CHINESE_CHESS -> ChessDTO.class;
+            case GOBANG -> GobangDTO.class;
+            case LANDLORDS -> LandlordsGameDTO.class;
+            case MAHJONG -> MahjongGameDto.class;
+            case UNO -> UNOGameDto.class;
+            case MONOPOLY -> MonopolyGameDto.class;
+            default -> GameDTO.class;
+        };
     }
 
     public static void clean() {

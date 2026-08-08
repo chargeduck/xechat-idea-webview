@@ -77,6 +77,11 @@ public class DataCache {
     public static List<OnlineServer> serverList;
 
     /**
+     * -s 选中服务器的版本号（LOGIN 时作为 clientVersion 上报）
+     */
+    public static String selectedServerVersion;
+
+    /**
 
      * 阅读配置
      */

@@ -159,6 +159,9 @@ public class LoginCommandHandler extends AbstractCommandHandler {
             }
             conn.setHost(ip);
             conn.setPort(portVal);
+            DataCache.selectedServerVersion = onlineServer.getVersion();
+        } else {
+            DataCache.selectedServerVersion = null;
         }
 
 

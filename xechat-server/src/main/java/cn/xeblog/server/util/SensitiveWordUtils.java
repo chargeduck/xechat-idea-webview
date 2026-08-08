@@ -111,7 +111,7 @@ public class SensitiveWordUtils {
 
         // 清除非法字符
         text = invalidClear(text);
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         SensitiveWordNode nowNode;
 
         for (int i = 0; i < text.length(); i++) {
