@@ -42,7 +42,7 @@ import { useChatStore } from '../stores/chatStore'
 import { useDeviceStore } from '../stores/deviceStore'
 import { useHelpStore } from '../stores/helpStore'
 import { useServerStore } from '../stores/serverStore'
-import { setChatStoreBridge } from '../store.js'
+import { setChatStoreBridge, state } from '../store.js'
 import { transport } from '../transport/transport-manager.js'
 import MarkdownMessage from './MarkdownMessage.vue'
 import StyleSelector from './StyleSelector.vue'
@@ -132,14 +132,20 @@ async function handleLogin(rawText) {
     else if (p.charAt(0) !== '-') { username = p }
   }
 
+  // 未指定服务器参数时默认连第 0 个
+  if (sIdx === -1 && !host && !port) {
+    sIdx = 0
+  }
+
   // 检查是否是 JSBridge 模式（Java 端 handle login）
   var isJSBridge = (window.xechat && typeof window.xechat.getState === 'function'
     && window.xechat.getState() !== '{}')
 
   if (isJSBridge) {
-    // JSBridge：原样转发给 Java，Java 端 LoginCommandHandler 全权处理
-    console.log('[ChatPanel] #login → JSBridge 转发: ' + rawText)
-    window.xechat.execCommand(rawText)
+    // JSBridge：补上 -s 0 后转发给 Java
+    var cmd = username ? '#login ' + username + ' -s ' + sIdx : rawText + ' -s ' + sIdx
+    console.log('[ChatPanel] #login → JSBridge 转发: ' + cmd)
+    window.xechat.execCommand(cmd)
     return
   }
 
@@ -191,6 +197,8 @@ async function handleLogin(rawText) {
 
   try {
     await transport.loginToServer(host, port, loginPayload)
+    state.online = true
+    state.username = username
     chatStore.addMessage('已连接到 ' + host + ':' + port + '，登录中...')
   } catch (e) {
     chatStore.addMessage('连接服务器失败: ' + (e.message || '未知错误'))
@@ -220,6 +228,14 @@ async function send() {
       }
     } else if (text.startsWith('#login')) {
       await handleLogin(text)
+    } else if (text.startsWith('#loging')) {
+      // 简化登录：#loging {nickname} → #login {nickname} -s 0
+      var nickname = text.slice('#loging'.length).trim()
+      if (!nickname) {
+        chatStore.addMessage('用法： #loging {昵称}，例如 #loging test')
+      } else {
+        await handleLogin('#login ' + nickname + ' -s 0')
+      }
     } else if (text.startsWith('#')) {
       console.log('[ChatPanel] → execCommand: ' + text)
       if (transport.mode === 'jsbridge') {
@@ -256,6 +272,10 @@ function onEnter(e) {
 onMounted(() => {
   console.log('[ChatPanel] 组件挂载, chatStore.messages.length=' + chatStore.messages.length)
   setChatStoreBridge(chatStore)
+  // 启动时静默拉取服务器列表（#showServer -c），写入 Pinia 供后续 #login / #loging 使用
+  serverStore.fetchServers(true).catch(function(e) {
+    console.warn('[ChatPanel] 初始化获取鱼塘列表失败:', e)
+  })
   if (chatStore.isEmpty) {
     chatStore.addMessage(helpStore.helpText)
   }

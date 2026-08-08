@@ -30,9 +30,11 @@ public class OnlineUsersMessageHandler extends AbstractMessageHandler<UserListMs
 
         GlobalThreadPool.execute(() -> {
             ThreadUtils.spinMoment(3000);
-            String msg = "系统公告：亲爱的鱼友，欢迎你来到鱼塘~ 倡导文明摸鱼、理性摸鱼，做个德才兼备的顶级摸鱼选手！" +
-                    "本项目为开源项目，开源地址：https://github.com/anlingyi/xechat-idea" +
-                    " \n插件使用有问题请进群反馈或是直接去GitHub提交issues，摸鱼技术交流群：754126966。";
+            String msg = """
+                    系统公告：亲爱的鱼友，欢迎你来到鱼塘~ 倡导文明摸鱼、理性摸鱼，做个德才兼备的顶级摸鱼选手！
+                    本项目为开源项目，开源地址：[xechat-idea-webview](https://gitee.com/chargeduck/xechat-idea-webview),[原项目地址xechat-idea](https://github.com/anlingyi/xechat-idea)
+                     插件使用有问题请进群反馈或是直接去GitHub提交issues，摸鱼技术交流群：754126966。
+                    \s""";
             ConsoleAction.showSimpleMsg(msg);
         });
     }

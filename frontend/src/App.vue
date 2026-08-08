@@ -29,6 +29,15 @@
             <el-icon :size="20"><Trophy /></el-icon>
           </div>
         </el-tooltip>
+        <el-tooltip content="在线列表" placement="right" :show-after="500">
+          <div
+            class="nav-btn"
+            :class="{ active: currentRoute === 'users' }"
+            @click="state.currentRoute = 'users'"
+          >
+            <el-icon :size="20"><UserFilled /></el-icon>
+          </div>
+        </el-tooltip>
       </div>
       <div class="nav-bottom">
         <el-tooltip content="设置" placement="right" :show-after="500">
@@ -44,6 +53,7 @@
       <ToolPanel v-else-if="currentRoute === 'tools'" />
       <GamePanel v-else-if="currentRoute === 'games'" />
       <RoomPanel v-else-if="currentRoute === 'room'" />
+      <OnlineUsersPanel v-else-if="currentRoute === 'users'" />
       <StyleEditor v-else-if="currentRoute === 'style-editor'" />
 
       <SettingsDialog v-model="state.settingsOpen" />
@@ -59,6 +69,7 @@ import ChatPanel from './components/ChatPanel.vue'
 import ToolPanel from './components/ToolPanel.vue'
 import GamePanel from './components/GamePanel.vue'
 import RoomPanel from './components/RoomPanel.vue'
+import OnlineUsersPanel from './components/OnlineUsersPanel.vue'
 import StyleEditor from './components/StyleEditor.vue'
 import SettingsDialog from './components/SettingsDialog.vue'
 
