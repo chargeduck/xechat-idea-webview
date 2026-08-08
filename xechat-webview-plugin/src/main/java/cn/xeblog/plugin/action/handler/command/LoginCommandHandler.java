@@ -151,8 +151,14 @@ public class LoginCommandHandler extends AbstractCommandHandler {
             }
 
             OnlineServer onlineServer = onlineServerList.get(serverId);
-            conn.setHost(onlineServer.getIp());
-            conn.setPort(onlineServer.getPort());
+            String ip = onlineServer.getIp();
+            Integer portVal = onlineServer.getPort();
+            if (StrUtil.isBlank(ip) || portVal == null) {
+                ConsoleAction.showSimpleMsg("服务器信息不完整（IP 或端口缺失），请检查服务器列表！");
+                return;
+            }
+            conn.setHost(ip);
+            conn.setPort(portVal);
         }
 
 

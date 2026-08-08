@@ -7,6 +7,7 @@ import cn.xeblog.plugin.persistence.PersistenceData;
 import cn.xeblog.plugin.persistence.PersistenceService;
 import cn.xeblog.plugin.tools.Tools;
 import cn.xeblog.commons.enums.Action;
+import cn.xeblog.commons.entity.OnlineServer;
 import cn.xeblog.commons.entity.game.GameRoomMsgDTO;
 import cn.xeblog.plugin.webview.WebViewPanel;
 import cn.xeblog.plugin.webview.VideoPlayerPanel;
@@ -20,6 +21,11 @@ import org.cef.handler.CefMessageRouterHandlerAdapter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -157,12 +163,14 @@ public class JSBridge {
                     var r=JSON.stringify({method:m,args:a||[]});
                     window.cefQuery({request:r,
                         onSuccess:function(resp){
-                            try{var d=JSON.parse(resp);
-                            if(d&&d.event){
-                                window.dispatchEvent(new CustomEvent('xechat:'+d.event,{detail:d.data||{}}));
-                            }
+                            try{
+                                var d=JSON.parse(resp);
+                                if(d&&d.event){
+                                    window.dispatchEvent(new CustomEvent('xechat:'+d.event,{detail:d.data||{}}));
+                                }
+                            }catch(ee){}
                             if(cb)cb(resp);
-                            }catch(ee){}}
+                        }
                         ,
                         onFailure:function(){}
                     });
@@ -200,6 +208,9 @@ public class JSBridge {
                 _x.getReadConfig=function(){return JSON.stringify(__readConfig);};
                 _x.setReadConfig=function(c){_call('setReadConfig',[c]);};
                 _x.ready=function(){_call('ready');};
+                _x.updateServerList=function(j){_call('updateServerList',[j]);};
+                _x.httpGet=function(u,cb){_call('httpGet',[u],cb);};
+                _x.testConnection=function(h,p,t,cb){_call('testConnection',[h,p,t],cb);};
                 _x._updateCache=function(data){
                     if(data.state)__state=data.state;
                     if(data.config)__config=data.config;
@@ -223,6 +234,37 @@ public class JSBridge {
             var call = gson.fromJson(data, JsCall.class);
             var method = call.method;
             var args = call.args != null ? call.args : List.<String>of();
+
+            // httpGet 需要异步返回响应体，直接在 handleQuery 中处理
+            if ("httpGet".equals(method) && !args.isEmpty()) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        String result = httpGet(args.get(0));
+                        callback.success(result);
+                    } catch (Exception e) {
+                        log.error("httpGet 失败: {}", args.get(0), e);
+                        callback.failure(500, e.getMessage());
+                    }
+                });
+                return;
+            }
+
+            // testConnection(host, port, timeout) → 异步回调 "true"/"false"
+            if ("testConnection".equals(method) && args.size() >= 3) {
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        String host = args.get(0);
+                        int port = Integer.parseInt(args.get(1));
+                        int timeout = Integer.parseInt(args.get(2));
+                        boolean alive = testTcpConnection(host, port, timeout);
+                        callback.success(String.valueOf(alive));
+                    } catch (Exception e) {
+                        log.error("testConnection 失败: {}", args, e);
+                        callback.success("false");
+                    }
+                });
+                return;
+            }
 
             CompletableFuture.runAsync(() -> {
                 try {
@@ -292,20 +334,66 @@ public class JSBridge {
             case "ready":
                 onFrontReady();
                 break;
+            case "updateServerList":
+                if (!args.isEmpty()) updateServerListInternal(args.get(0));
+                break;
         }
     }
 
     /**
      * 前端 Vue 应用挂载、监听器全部注册完毕后回调。
-     * 此处才安全地触发 #help 命令，避免消息早于监听器注册到达而丢失。
      */
     private void onFrontReady() {
-        log.info("[JSBridge] 收到前端 ready 信号，触发 help 命令");
+        log.info("[JSBridge] 收到前端 ready 信号");
+    }
+
+    /**
+     * 前端拉取到服务器列表后回传，写入 DataCache.serverList
+     * 参数为 JSON 数组：[{name, ip, port}, ...]
+     */
+    private void updateServerListInternal(String json) {
         try {
-            cn.xeblog.plugin.enums.Command.handle("#help");
-            log.info("[JSBridge] help 命令已执行");
+            OnlineServer[] arr = new Gson().fromJson(json, OnlineServer[].class);
+            List<OnlineServer> list = Arrays.asList(arr);
+            DataCache.serverList = list;
+            log.info("[JSBridge] updateServerList 写入 " + list.size() + " 条服务器");
         } catch (Exception e) {
-            log.error("触发 help 命令失败", e);
+            log.error("[JSBridge] updateServerList 解析失败", e);
+        }
+    }
+
+    /**
+     * 通过 Java HTTP 客户端抓取 URL 内容，解决前端 fetch 的跨域问题。
+     * 返回响应体字符串。
+     */
+    private String httpGet(String url) throws Exception {
+        var client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        var request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(15))
+                .header("User-Agent", "XEChat-Plugin/2.0")
+                .GET()
+                .build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 400) {
+            throw new RuntimeException("HTTP " + response.statusCode());
+        }
+        return response.body();
+    }
+
+    /**
+     * TCP 连通性测试。通过 Socket.connect 尝试连接 host:port。
+     * @param timeout 毫秒超时
+     * @return true 表示可达
+     */
+    private boolean testTcpConnection(String host, int port, int timeout) {
+        try (var socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), timeout);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

@@ -34,6 +34,16 @@ export class JSBridgeTransport {
     }
   }
 
+  /**
+   * JSBridge 模式：构造 #login 命令并转发给 Java 处理。
+   * Java 端 LoginCommandHandler 负责 NettyClient 连接。
+   */
+  loginToServer(host, port, loginPayload) {
+    var username = (loginPayload && loginPayload.body && loginPayload.body.username) || ''
+    var cmd = '#login ' + username + ' -h ' + host + ' -p ' + port
+    this.execCommand(cmd)
+  }
+
   sendMessage(text) {
     if (window.xechat && window.xechat.sendMessage) {
       window.xechat.sendMessage(text)

@@ -31,13 +31,15 @@
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from '../stores/chatStore'
 import { useHelpStore } from '../stores/helpStore'
+import { useServerStore } from '../stores/serverStore'
 import { setChatStoreBridge } from '../store.js'
-import { getMode } from '../api.js'
+import { transport } from '../transport/transport-manager.js'
 import MarkdownMessage from './MarkdownMessage.vue'
 import StyleSelector from './StyleSelector.vue'
 
 const chatStore = useChatStore()
 const helpStore = useHelpStore()
+const serverStore = useServerStore()
 
 const messageListRef = ref(null)
 const inputRef = ref(null)
@@ -63,15 +65,115 @@ function onStyleSelect(tag) {
   inputRef.value?.focus()
 }
 
+/**
+ * 处理 #login 命令。
+ * JSBridge 模式：转发给 Java LoginCommandHandler（NettyClient）。
+ * WebSocket 模式：解析服务器参数，重连 WS 并发送 LOGIN。
+ */
+async function handleLogin(rawText) {
+  var parts = rawText.trim().split(/\s+/)
+  var username = ''
+  var host = ''
+  var port = ''
+  var sIdx = -1
+
+  for (var i = 1; i < parts.length; i++) {
+    var p = parts[i]
+    if (p === '-s' && i + 1 < parts.length) { sIdx = parseInt(parts[++i]) }
+    else if (p === '-h' && i + 1 < parts.length) { host = parts[++i] }
+    else if (p === '-p' && i + 1 < parts.length) { port = parts[++i] }
+    else if (p.charAt(0) !== '-') { username = p }
+  }
+
+  // 检查是否是 JSBridge 模式（Java 端 handle login）
+  var isJSBridge = (window.xechat && typeof window.xechat.getState === 'function'
+    && window.xechat.getState() !== '{}')
+
+  if (isJSBridge) {
+    // JSBridge：原样转发给 Java，Java 端 LoginCommandHandler 全权处理
+    console.log('[ChatPanel] #login → JSBridge 转发: ' + rawText)
+    window.xechat.execCommand(rawText)
+    return
+  }
+
+  // WebSocket 模式：前端解析服务器
+  if (sIdx >= 0) {
+    if (serverStore.servers.length === 0) {
+      chatStore.addMessage('正在获取鱼塘列表...')
+      try {
+        await serverStore.fetchServers(false)
+      } catch (e) {
+        chatStore.addMessage('获取鱼塘列表失败: ' + e.message)
+        return
+      }
+    }
+    var srv = serverStore.servers[sIdx]
+    if (!srv) {
+      chatStore.addMessage('无效的服务器编号: ' + sIdx + '，有效范围 0~' + (serverStore.servers.length - 1))
+      return
+    }
+    // Web 端：检查 WS 连通性
+    if (srv.wsAlive === false) {
+      chatStore.addMessage('服务器 ' + (srv.name || srv.ip) + ' 不支持 WebSocket，请使用 IDEA 插件登录')
+      return
+    }
+    host = srv.ip
+    port = String(srv.port)
+  }
+
+  if (!host || !port) {
+    chatStore.addMessage('请指定服务器： #login [-s 编号] 或 #login -h IP -p 端口 [昵称]')
+    return
+  }
+
+  if (!username) username = 'User-' + Date.now().toString(36)
+
+  chatStore.addMessage('正在连接服务器 ' + host + ':' + port + ' ...')
+
+  var loginPayload = {
+    action: 'LOGIN',
+    body: {
+      username: username,
+      status: 'FISHING',
+      platform: 'WEB',
+      uuid: localStorage.getItem('xechat_uuid') || ('web-' + Math.random().toString(36).substring(2) + Date.now().toString(36)),
+      pluginVersion: '',
+      reconnected: false
+    }
+  }
+
+  try {
+    await transport.loginToServer(host, port, loginPayload)
+    chatStore.addMessage('已连接到 ' + host + ':' + port + '，登录中...')
+  } catch (e) {
+    chatStore.addMessage('连接服务器失败: ' + (e.message || '未知错误'))
+  }
+}
+
 // 发送逻辑
-function send() {
+async function send() {
   const text = inputText.value.trim()
   if (!text) return
 
-  console.log('[ChatPanel] send() 触发, text=' + text.substring(0, 50) + ', xechat=' + (typeof window.xechat))
+  console.log('[ChatPanel] send() 触发, text=' + text.substring(0, 50))
 
   try {
-    if (text.startsWith('#')) {
+    if (text === '#help') {
+      chatStore.addMessage(helpStore.helpText)
+    } else if (text === '#clean') {
+      chatStore.clear()
+    } else if (text.startsWith('#showServer')) {
+      chatStore.addMessage('正在获取鱼塘列表...')
+      const forceRefresh = text.includes('-c')
+      try {
+        await serverStore.fetchServers(forceRefresh)
+        chatStore.addMessage(serverStore.serverTable)
+      } catch (e) {
+        chatStore.addMessage('鱼塘列表获取失败: ' + e.message)
+      }
+    } else if (text.startsWith('#login')) {
+      await handleLogin(text)
+    } else if (text.startsWith('#')) {
       console.log('[ChatPanel] → execCommand: ' + text)
       window.xechat.execCommand(text)
     } else {
@@ -99,10 +201,8 @@ function onEnter(e) {
 onMounted(() => {
   console.log('[ChatPanel] 组件挂载, chatStore.messages.length=' + chatStore.messages.length)
   setChatStoreBridge(chatStore)
-  // 仅 WebSocket 模式（VSCode无枚举提示）时注入 helpStore
-  if (chatStore.isEmpty && getMode() === 'websocket') {
-    chatStore.addMessage(helpStore.helpTexts)
-    console.log('[ChatPanel] WebSocket 模式，已从 helpStore 注入帮助提示')
+  if (chatStore.isEmpty) {
+    chatStore.addMessage(helpStore.helpText)
   }
   inputRef.value?.focus()
 })

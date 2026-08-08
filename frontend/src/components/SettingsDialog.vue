@@ -50,7 +50,7 @@
 import { ref } from 'vue'
 import { state } from '../store.js'
 import { isDark, toggleTheme } from '../composables/useTheme.js'
-import { getMode } from '../api.js'
+import { getConfiguredMode } from '../api.js'
 
 defineProps({
   modelValue: { type: Boolean, default: false }
@@ -58,7 +58,7 @@ defineProps({
 
 defineEmits(['update:modelValue'])
 
-const currentTransportMode = ref(getMode())
+const currentTransportMode = ref(getConfiguredMode())
 const localTransportMode = ref(localStorage.getItem('xechat_transport_mode') || 'auto')
 
 function onTransportModeChange(val) {

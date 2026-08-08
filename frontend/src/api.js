@@ -86,6 +86,10 @@ export function getMode() {
   return transport.mode
 }
 
+export function getConfiguredMode() {
+  return transport.configuredMode
+}
+
 export function on(type, handler) {
   transport.on(type, handler)
 }
@@ -96,6 +100,10 @@ export function off(type, handler) {
 
 export function execCommand(cmd) {
   transport.execCommand(cmd)
+}
+
+export function loginToServer(host, port, loginPayload) {
+  return transport.loginToServer(host, port, loginPayload)
 }
 
 export function sendMessage(text) {

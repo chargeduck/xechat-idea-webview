@@ -49,9 +49,16 @@ class TransportManager {
   }
 
   get mode() { return this._transport ? this._transport.name : 'none' }
+  get configuredMode() { return this._mode }
 
   execCommand(cmd) {
     if (this._transport) this._transport.execCommand(cmd)
+  }
+
+  loginToServer(host, port, loginPayload) {
+    if (this._transport && this._transport.loginToServer) {
+      return this._transport.loginToServer(host, port, loginPayload)
+    }
   }
 
   sendMessage(text) {

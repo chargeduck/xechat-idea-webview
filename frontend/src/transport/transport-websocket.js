@@ -111,6 +111,62 @@ export class WebSocketTransport {
     return !!parsed
   }
 
+  /**
+   * 断开当前连接，重连到指定 host:port 的 WebSocket（port+1），
+   * 连接成功后自动发送 LOGIN。
+   * @param {string} host
+   * @param {number} port
+   * @param {object} loginPayload - LOGIN action body
+   */
+  async loginToServer(host, port, loginPayload) {
+    var wsPort = parseInt(port) + 1
+    var url = 'ws://' + host + ':' + wsPort + '/xechat'
+    this._url = url
+
+    // 断开旧连接
+    this.disconnect()
+    this._intentionalClose = false
+
+    var self = this
+    return new Promise(function(resolve, reject) {
+      var ws = new WebSocket(url)
+      self._ws = ws
+
+      ws.onopen = function() {
+        console.log('[WS] connected to', url)
+        self._startHeartbeat()
+        self._emit('connected', {})
+
+        // 连接成功后立即发送 LOGIN
+        if (loginPayload) {
+          self._send(loginPayload)
+        }
+        resolve()
+      }
+
+      ws.onmessage = function(event) {
+        try {
+          var msg = JSON.parse(event.data)
+          self._dispatch(msg)
+        } catch(e) {
+          console.error('[WS] JSON parse error:', e)
+        }
+      }
+
+      ws.onclose = function(event) {
+        console.log('[WS] disconnected, code:', event.code)
+        self._stopHeartbeat()
+        self._emit('disconnected', { code: event.code })
+        if (!self._intentionalClose) self._scheduleReconnect()
+      }
+
+      ws.onerror = function(err) {
+        console.error('[WS] connection error:', err)
+        reject(err)
+      }
+    })
+  }
+
   sendMessage(text) {
     this._send({ action: 'CHAT', body: { content: text, msgType: 'TEXT' } })
   }

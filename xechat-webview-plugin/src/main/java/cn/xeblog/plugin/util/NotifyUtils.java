@@ -3,11 +3,15 @@ package cn.xeblog.plugin.util;
 import cn.xeblog.plugin.action.ConsoleAction;
 import cn.xeblog.plugin.cache.DataCache;
 import cn.xeblog.plugin.webview.WebViewPanel;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 
 /**
  * WebView 架构下的通知工具。
- * 通知不再使用 IntelliJ 原生 Notification API（2.x 平台 classpath 存在兼容问题），
- * 改为推送到前端 WebView 显示弹窗通知，同时输出到控制台。
+ * 控制台输出改为 VitePress ::: 容器格式，由 MarkdownMessage 渲染。
+ * 同时推送前端 xechat:notify 事件 + 弹出 IntelliJ 原生通知。
  *
  * @author anlingyi
  */
@@ -63,7 +67,29 @@ public class NotifyUtils {
             ));
         }
 
-        // 同时输出到控制台
-        ConsoleAction.showSimpleMsg("[" + level.toUpperCase() + "] " + title + ": " + content);
+        // 控制台输出 VitePress ::: 容器格式，由 MarkdownMessage 渲染
+        String vtContent = content != null && !content.isEmpty() ? "\n" + content : "";
+        ConsoleAction.showSimpleMsg("::: " + level + " " + title + vtContent + "\n:::");
+
+        // IntelliJ 原生通知弹窗
+        showIntelliJNotification(title, content, level);
+    }
+
+    private static void showIntelliJNotification(String title, String content, String level) {
+        try {
+            NotificationType type = switch (level) {
+                case "warn" -> NotificationType.WARNING;
+                case "error" -> NotificationType.ERROR;
+                default -> NotificationType.INFORMATION;
+            };
+            Project[] projects = ProjectManager.getInstance().getOpenProjects();
+            Project project = projects.length > 0 ? projects[0] : null;
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("cn.xeblog.xechat.webview.notify")
+                    .createNotification(title, content, type)
+                    .notify(project);
+        } catch (Exception ignored) {
+            // Notification API 在不同平台版本可能有兼容差异，静默降级
+        }
     }
 }

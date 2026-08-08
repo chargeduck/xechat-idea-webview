@@ -19,12 +19,6 @@ public enum Command {
             return "登录，" + this.getCommand() + " {昵称} [-s {鱼塘编号} -h {服务端IP} -p {服务端端口} -c (清理缓存)]";
         }
     },
-    SHOW_SERVER("showServer") {
-        @Override
-        public String getDesc() {
-            return "鱼塘列表，" + this.getCommand() + " [-c（清理缓存)]";
-        }
-    },
     SHOW_STATUS("showStatus", "查看可用状态值"),
     SET_STATUS("setStatus") {
         @Override
@@ -65,8 +59,6 @@ public enum Command {
     MO_YU("moyu", "摸鱼办生成"),
     ADMIN("admin", "管控"),
     LOGOUT("exit", "退出"),
-    CLEAN("clean", "清屏"),
-    HELP("help", "帮助"),
     MASK("mask", "屏蔽 多个用,隔开 -u 昵称屏蔽 -r 省份屏蔽 -i ip屏蔽 -c 解除所有屏蔽 -n 不展示屏蔽人消息"),
     BACKGROUND_IMAGE("backgroundImage", "切换背景图片"),
     ;

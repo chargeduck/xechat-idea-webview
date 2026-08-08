@@ -85,11 +85,11 @@ public class ConsoleAction implements MainWindowInitializedEventListener {
     }
 
     public static void showErrorMsg() {
-        showSimpleMsg("输入的命令有误！帮助命令：" + Command.HELP.getCommand());
+        showSimpleMsg("输入的命令有误！帮助命令：#hlep");
     }
 
     public static void showLoginMsg() {
-        showSimpleMsg("请先登录！登录命令：" + Command.LOGIN.getCommand() + "，帮助命令：" + Command.HELP.getCommand());
+        showSimpleMsg("请先登录！登录命令：" + Command.LOGIN.getCommand() + "，帮助命令：#help" );
     }
 
     public static void showSystemMsg(String time, String msg) {

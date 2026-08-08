@@ -1,5 +1,6 @@
 import { reactive, nextTick } from 'vue'
 import { on, getMode } from './api.js'
+import { ElMessage } from 'element-plus'
 
 export const state = reactive({
     online: false,
@@ -107,6 +108,14 @@ on('message', (data) => {
         const el = document.querySelector('.message-list')
         if (el) el.scrollTop = el.scrollHeight
     })
+})
+
+// 监听 Java NotifyUtils 推送的系统通知事件，弹出 ElMessage
+window.addEventListener('xechat:notify', (e) => {
+    const { title, content, level } = e.detail || {}
+    const msg = title && content ? title + '：' + content : (title || content || '')
+    const elLevel = level === 'warn' ? 'warning' : (level === 'error' ? 'error' : 'info')
+    ElMessage({ message: msg, type: elLevel, duration: 5000, showClose: true, grouping: true })
 })
 
 export function refreshState() {
