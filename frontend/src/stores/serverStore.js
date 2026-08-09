@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 
 const STORAGE_KEY = 'xechat_server_cache'
 const CACHE_VERSION = 2  // v2: 增加 wsAlive 字段
-// gitee Open API（支持 CORS，IDEA 插件和 Web 环境通用）
-const SERVER_LIST_API_URL = 'https://gitee.com/api/v5/repos/chargeduck/xechat-idea-webview/contents/server_list.json'
+// 服务端列表（需服务端配置 Access-Control-Allow-Origin 解决跨域）
+const SERVER_LIST_API_URL = 'https://lesscoding.net/serverList.json'
 
 function loadCache() {
   try {
@@ -23,18 +23,25 @@ function saveCache(data) {
 }
 
 /**
- * base64 → UTF-8 字符串。
- * 用 decodeURIComponent + percent-encoding 方案，不依赖 TextDecoder/Uint8Array，
- * 兼容性覆盖所有现代浏览器及 JCEF 内嵌 Chromium。
+ * 跨环境 HTTP GET JSON。JSBridge 模式走 Java 侧代理（绕过 file:// CORS），
+ * WebSocket / Web 模式直接 fetch。
  */
-function b64ToUtf8(b64) {
-  const binary = atob(b64)
-  var hex = ''
-  for (var i = 0; i < binary.length; i++) {
-    var h = binary.charCodeAt(i).toString(16)
-    hex += '%' + (h.length === 1 ? '0' : '') + h
+function httpGetJson(url) {
+  if (window.xechat && typeof window.xechat.httpGet === 'function') {
+    return new Promise(function (resolve, reject) {
+      window.xechat.httpGet(url, function (body) {
+        try {
+          resolve(JSON.parse(body))
+        } catch (e) {
+          reject(new Error('JSON parse error: ' + e.message))
+        }
+      })
+    })
   }
-  return decodeURIComponent(hex)
+  return fetch(url).then(function (resp) {
+    if (!resp.ok) throw new Error('HTTP ' + resp.status)
+    return resp.json()
+  })
 }
 
 /**
@@ -72,6 +79,10 @@ function testConnection(host, port, timeout) {
  * @returns {Promise<boolean>} true 握手成功 / false 不可达
  */
 function testWsConnection(host, port) {
+  // JSBridge/JCEF 模式下 WebSocket 探测可能触发 JCEF 原生错误（Script error. 0:0），跳过
+  if (window.xechat && typeof window.xechat.httpGet === 'function') {
+    return Promise.resolve(false)
+  }
   return new Promise(function (resolve) {
     var wsPort = parseInt(port) + 1
     var wsUrl = 'ws://' + host + ':' + wsPort + '/xechat'
@@ -144,12 +155,8 @@ export const useServerStore = defineStore('server', {
       }
       this.loading = true
       try {
-        const resp = await fetch(SERVER_LIST_API_URL)
-        if (!resp.ok) throw new Error('HTTP ' + resp.status)
-        const apiData = await resp.json()
-        if (!apiData.content) throw new Error('API 返回格式异常')
-        const text = b64ToUtf8(apiData.content.replace(/\s/g, ''))
-        const data = JSON.parse(text)
+        const data = await httpGetJson(SERVER_LIST_API_URL)
+        if (!Array.isArray(data)) throw new Error('API 返回格式异常，期望 JSON 数组')
         this.servers = data
         saveCache(data)
         // 同步到 Java 端 DataCache.serverList（JSBridge 环境），供 #login -s 使用

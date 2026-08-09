@@ -27,7 +27,7 @@
           v-model="inputText"
           placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行"
           type="textarea"
-          :autosize="{ minRows: 1, maxRows: 4 }"
+          rows="3"
           @keydown.enter="onEnter"
           class="chat-input"
         />
@@ -59,9 +59,15 @@ const inputText = ref('')
 // 消息列表自动滚动到底部
 watch(() => chatStore.messages.length, (newLen, oldLen) => {
   console.log('[ChatPanel] messages.length 变化: ' + oldLen + ' -> ' + newLen)
+  window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:watch', oldLen + '->' + newLen)
   nextTick(() => {
-    const el = messageListRef.value
-    if (el) el.scrollTop = el.scrollHeight
+    window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:nextTick', 'before scroll')
+    // requestAnimationFrame 延迟到 JCEF 渲染管线完成后执行，避免同步 reflow 触发原生错误
+    requestAnimationFrame(() => {
+      window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:rAF', 'scrollTop')
+      const el = messageListRef.value
+      if (el) el.scrollTop = el.scrollHeight
+    })
   })
 })
 
@@ -277,6 +283,7 @@ onMounted(() => {
     console.warn('[ChatPanel] 初始化获取鱼塘列表失败:', e)
   })
   if (chatStore.isEmpty) {
+    window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:onMounted', 'addMessage helpText')
     chatStore.addMessage(helpStore.helpText)
   }
   inputRef.value?.focus()
@@ -293,8 +300,9 @@ onMounted(() => {
 /* ===== 消息列表 ===== */
 .message-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: 12px 16px;
+  contain: layout style;
 }
 
 .message-item {
@@ -313,51 +321,54 @@ onMounted(() => {
   border-radius: 0 4px 4px 0;
   font-size: 12px;
   line-height: 1.5;
-
-  .system-msg-icon {
-    flex-shrink: 0;
-    font-size: 13px;
-    margin-top: 2px;
-  }
-  .system-msg-body {
-    flex: 1;
-    min-width: 0;
-  }
-  .system-msg-title {
-    font-weight: 600;
-    margin-bottom: 2px;
-    font-size: 12px;
-  }
-  .system-msg-text {
-    word-break: break-word;
-  }
-
-  &.error {
-    border-color: var(--danger-color);
-    background: rgba(244, 71, 71, 0.08);
-    .system-msg-icon { color: var(--danger-color); }
-    .system-msg-title { color: var(--danger-color); }
-  }
-  &.notice {
-    border-color: var(--success-color);
-    background: rgba(78, 201, 176, 0.08);
-    .system-msg-icon { color: var(--success-color); }
-    .system-msg-title { color: var(--success-color); }
-  }
-  &.info {
-    border-color: var(--accent-color);
-    background: rgba(0, 122, 204, 0.08);
-    .system-msg-icon { color: var(--accent-color); }
-    .system-msg-title { color: var(--accent-color); }
-  }
 }
+
+.system-msg-box .system-msg-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.system-msg-box .system-msg-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.system-msg-box .system-msg-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+.system-msg-box .system-msg-text {
+  word-break: break-word;
+}
+
+.system-msg-box.error {
+  border-color: var(--danger-color);
+  background: rgba(244, 71, 71, 0.08);
+}
+.system-msg-box.error .system-msg-icon { color: var(--danger-color); }
+.system-msg-box.error .system-msg-title { color: var(--danger-color); }
+
+.system-msg-box.notice {
+  border-color: var(--success-color);
+  background: rgba(78, 201, 176, 0.08);
+}
+.system-msg-box.notice .system-msg-icon { color: var(--success-color); }
+.system-msg-box.notice .system-msg-title { color: var(--success-color); }
+
+.system-msg-box.info {
+  border-color: var(--accent-color);
+  background: rgba(0, 122, 204, 0.08);
+}
+.system-msg-box.info .system-msg-icon { color: var(--accent-color); }
+.system-msg-box.info .system-msg-title { color: var(--accent-color); }
 
 /* 浅色主题下系统消息背景微调 */
-:root.light .system-msg-box {
-  &.error  { background: rgba(244, 71, 71, 0.06); }
-  &.notice { background: rgba(78, 201, 176, 0.06); }
-  &.info   { background: rgba(0, 120, 212, 0.06); }
-}
+:root.light .system-msg-box.error  { background: rgba(244, 71, 71, 0.06); }
+:root.light .system-msg-box.notice { background: rgba(78, 201, 176, 0.06); }
+:root.light .system-msg-box.info   { background: rgba(0, 120, 212, 0.06); }
 
 .message-item:last-child {
   border-bottom: none;

@@ -377,6 +377,7 @@ public class JSBridge {
     private String httpGet(String url) throws Exception {
         var client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
+                .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(url))

@@ -2,49 +2,43 @@
   <el-container class="app-container">
     <el-aside width="48px" class="app-sidebar">
       <div class="nav-buttons">
-        <el-tooltip content="聊天" placement="right" :show-after="500">
-          <div
-            class="nav-btn"
-            :class="{ active: currentRoute === 'chat' }"
-            @click="state.currentRoute = 'chat'"
-          >
-            <el-icon :size="20"><ChatDotRound /></el-icon>
-          </div>
-        </el-tooltip>
-        <el-tooltip content="工具" placement="right" :show-after="500">
-          <div
-            class="nav-btn"
-            :class="{ active: currentRoute === 'tools' }"
-            @click="state.currentRoute = 'tools'"
-          >
-            <el-icon :size="20"><Tools /></el-icon>
-          </div>
-        </el-tooltip>
-        <el-tooltip content="游戏" placement="right" :show-after="500">
-          <div
-            class="nav-btn"
-            :class="{ active: currentRoute === 'games' || currentRoute === 'room' }"
-            @click="state.currentRoute = 'games'"
-          >
-            <el-icon :size="20"><Trophy /></el-icon>
-          </div>
-        </el-tooltip>
-        <el-tooltip content="在线列表" placement="right" :show-after="500">
-          <div
-            class="nav-btn"
-            :class="{ active: currentRoute === 'users' }"
-            @click="state.currentRoute = 'users'"
-          >
-            <el-icon :size="20"><UserFilled /></el-icon>
-          </div>
-        </el-tooltip>
+        <div
+          class="nav-btn"
+          :class="{ active: currentRoute === 'chat' }"
+          @click="state.currentRoute = 'chat'"
+          title="聊天"
+        >
+          <el-icon :size="20"><ChatDotRound /></el-icon>
+        </div>
+        <div
+          class="nav-btn"
+          :class="{ active: currentRoute === 'tools' }"
+          @click="state.currentRoute = 'tools'"
+          title="工具"
+        >
+          <el-icon :size="20"><Tools /></el-icon>
+        </div>
+        <div
+          class="nav-btn"
+          :class="{ active: currentRoute === 'games' || currentRoute === 'room' }"
+          @click="state.currentRoute = 'games'"
+          title="游戏"
+        >
+          <el-icon :size="20"><Trophy /></el-icon>
+        </div>
+        <div
+          class="nav-btn"
+          :class="{ active: currentRoute === 'users' }"
+          @click="state.currentRoute = 'users'"
+          title="在线列表"
+        >
+          <el-icon :size="20"><UserFilled /></el-icon>
+        </div>
       </div>
       <div class="nav-bottom">
-        <el-tooltip content="设置" placement="right" :show-after="500">
-          <div class="nav-btn" @click="state.settingsOpen = !state.settingsOpen">
-            <el-icon :size="18"><Setting /></el-icon>
-          </div>
-        </el-tooltip>
+        <div class="nav-btn" @click="state.settingsOpen = !state.settingsOpen" title="设置">
+          <el-icon :size="18"><Setting /></el-icon>
+        </div>
       </div>
     </el-aside>
 

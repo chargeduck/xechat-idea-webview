@@ -51,7 +51,10 @@ function preprocessFont(text) {
 }
 
 const renderedHtml = computed(() => {
+  window.__debug_pushSnapshot && window.__debug_pushSnapshot('Markdown:render-start', 'len=' + (props.content ? props.content.length : 0))
   if (!props.content) return ''
-  return md.render(preprocessFont(props.content))
+  var html = md.render(preprocessFont(props.content))
+  window.__debug_pushSnapshot && window.__debug_pushSnapshot('Markdown:render-end', 'htmlLen=' + html.length)
+  return html
 })
 </script>

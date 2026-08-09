@@ -143,6 +143,7 @@ export function setChatStoreBridge(store) {
 console.log('[store.js] 脚本加载，准备注册 console 监听器')
 on('console', (msgs) => {
     console.log('[store.js] console 回调触发, count=' + msgs.length)
+    window.__debug_pushSnapshot && window.__debug_pushSnapshot('store:console', 'count=' + msgs.length)
 
     // 合并相邻的 USER_NAME::头 + 内容 为单条消息（Java ConsoleAction 拆成两条推送）
     var merged = _mergeConsoleMessages(msgs)
@@ -156,6 +157,7 @@ on('console', (msgs) => {
 
     // 写入 Pinia chatStore（若已桥接）；未就绪时先缓存，setChatStoreBridge 时自动排空
     if (_chatStoreBridge) {
+        window.__debug_pushSnapshot && window.__debug_pushSnapshot('store:bridge', 'call addMessagesRaw')
         _chatStoreBridge.addMessagesRaw(parsed)
     } else {
         console.log('[store.js] 桥接未就绪，缓存 ' + parsed.length + ' 条消息到队列')
