@@ -127,6 +127,57 @@
             pushSnapshot('removeChild', (this.className||this.tagName||'?') + ' - ' + ((child&&child.tagName)||'?'))
             return _removeChild.call(this, child)
         }
+
+        // Vue 3 使用的现代 DOM API（Element 级别，非 Node 级别）
+        if (Element.prototype.append) {
+            var _append = Element.prototype.append
+            Element.prototype.append = function() {
+                pushSnapshot('append', (this.className||this.tagName||'?') + ' +' + arguments.length + ' nodes')
+                return _append.apply(this, arguments)
+            }
+        }
+        if (Element.prototype.prepend) {
+            var _prepend = Element.prototype.prepend
+            Element.prototype.prepend = function() {
+                pushSnapshot('prepend', (this.className||this.tagName||'?') + ' +' + arguments.length + ' nodes')
+                return _prepend.apply(this, arguments)
+            }
+        }
+        if (Element.prototype.before) {
+            var _before = Element.prototype.before
+            Element.prototype.before = function() {
+                pushSnapshot('before', (this.className||this.tagName||'?') + ' +' + arguments.length + ' nodes')
+                return _before.apply(this, arguments)
+            }
+        }
+        if (Element.prototype.after) {
+            var _after = Element.prototype.after
+            Element.prototype.after = function() {
+                pushSnapshot('after', (this.className||this.tagName||'?') + ' +' + arguments.length + ' nodes')
+                return _after.apply(this, arguments)
+            }
+        }
+        if (Element.prototype.remove) {
+            var _remove = Element.prototype.remove
+            Element.prototype.remove = function() {
+                pushSnapshot('remove', (this.className||this.tagName||'?'))
+                return _remove.call(this)
+            }
+        }
+        if (Element.prototype.replaceWith) {
+            var _replaceWith = Element.prototype.replaceWith
+            Element.prototype.replaceWith = function() {
+                pushSnapshot('replaceWith', (this.className||this.tagName||'?'))
+                return _replaceWith.apply(this, arguments)
+            }
+        }
+        if (Element.prototype.replaceChildren) {
+            var _replaceChildren = Element.prototype.replaceChildren
+            Element.prototype.replaceChildren = function() {
+                pushSnapshot('replaceChildren', (this.className||this.tagName||'?') + ' +' + arguments.length + ' nodes')
+                return _replaceChildren.apply(this, arguments)
+            }
+        }
     })()
 
     // ============================================================
@@ -223,7 +274,7 @@
                 if (e.error.message) errInfo += ' msg=' + e.error.message
                 if (e.error.stack) errInfo += '\nSTACK:' + e.error.stack.slice(0, 800)
             }
-            errInfo += '\n--- last innerHTML ---\n' + (_lastInnerHTML || '(none)')
+            errInfo += '\n--- last rendered HTML ---\n' + (window.__lastRenderedHtml || '(none)')
 
             appendLog('ONERROR', [errInfo + '\n--- snapshots ---\n' + (snapDump || '  (none)')])
             _orig.error.call(console, '[ONERROR]', errInfo)

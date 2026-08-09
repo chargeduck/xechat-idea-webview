@@ -80,6 +80,14 @@ public class WebViewPanel extends JPanel {
                     // CefMessageRouter 必须在 loadURL 前注册，否则渲染进程不会创建 window.cefQuery
                     jsBridge.setupMessageRouter();
 
+                    // 自动打开 JCEF DevTools（调试用），失败不影响主流程
+                    try {
+                        browser.openDevtools();
+                        log.info("JCEF DevTools 已自动打开");
+                    } catch (Exception e) {
+                        log.warn("JCEF DevTools 打开失败: {}", e.getMessage());
+                    }
+
                     client.addLoadHandler(new CefLoadHandlerAdapter() {
                         @Override
                         public void onLoadEnd(CefBrowser cb, CefFrame frame, int httpStatusCode) {

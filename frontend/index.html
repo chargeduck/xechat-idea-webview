@@ -9,22 +9,16 @@
         #error-box { display:none; padding:20px; color:#f56c6c; white-space:pre-wrap; font-size:13px; }
     </style>
     <script>
-        // 捕获 JS 运行时错误
+        // 捕获 JS 运行时错误（仅写入 error-box，不调用 console 避免 JCEF 二次报错）
         window.onerror = function(msg, url, line, col, error) {
-            console.error('[onerror]', msg, url, line, col, error);
-            var app = document.getElementById('app');
+            try { console.error('[onerror]', msg, url, line, col); } catch(_) {}
             var box = document.getElementById('error-box');
             if (!box) return false;
             box.style.display = 'block';
             box.textContent = 'JS Error: ' + msg + '\\nFile: ' + url + '\\nLine: ' + line + ':' + col;
             if (error) {
-                box.textContent += '\\n\\nError.name: ' + (error.name || '(无)');
-                box.textContent += '\\nError.message: ' + (error.message || '(无)');
+                box.textContent += '\\n\\n' + (error.name || 'Error') + ': ' + (error.message || '');
                 if (error.stack) box.textContent += '\\n\\nStack:\\n' + error.stack;
-            }
-            if (app) {
-                app.innerHTML = '';
-                app.appendChild(box);
             }
             return true;
         };

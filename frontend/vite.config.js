@@ -47,6 +47,7 @@ export default defineConfig({
     outDir,
     emptyOutDir: true,
     assetsInlineLimit: 0,
+    minify: false,          // JCEF DevTools 调试用，保留可读代码
     // IIFE 格式绕过 file:/// 协议的 ES module CORS 限制
     target: 'es2015',
     modulePreload: false,
