@@ -1,17 +1,3 @@
-console.log('[main.js] Vue 应用开始创建')
-
-// vConsole 暂未启用，优先使用 JCEF DevTools（右键 → Open DevTools）调试
-// 需要时取消注释即可
-// if (location.protocol === 'file:') {
-//   import('vconsole').then(function(mod) {
-//     new mod.default()
-//     console.log('[main.js] vConsole 已启动（file:// 环境自动开启）')
-//   }).catch(function(e) {
-//     console.error('[main.js] vConsole 加载失败', e)
-//   })
-// }
-
-// import './utils/debug.js'  // 暂时注释，改用 JCEF DevTools 调试
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'

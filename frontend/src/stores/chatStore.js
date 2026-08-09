@@ -21,7 +21,6 @@ export const useChatStore = defineStore('chat', {
      * 添加单条消息
      */
     addMessage(text, type) {
-      window.__debug_pushSnapshot && window.__debug_pushSnapshot('chatStore:addMessage', 'type=' + (type || 'none'))
       this.messages.push({
         text,
         time: new Date().toLocaleTimeString(),
@@ -52,15 +51,12 @@ export const useChatStore = defineStore('chat', {
      * @param {Array<{text: string, type: string|undefined}>} parsed
      */
     addMessagesRaw(parsed) {
-      window.__debug_pushSnapshot && window.__debug_pushSnapshot('chatStore:addMessagesRaw', 'start count=' + parsed.length)
       parsed.forEach(p => {
-        window.__debug_pushSnapshot && window.__debug_pushSnapshot('chatStore:push', 'before')
         this.messages.push({
           text: p.text,
           time: new Date().toLocaleTimeString(),
           type: p.type
         })
-        window.__debug_pushSnapshot && window.__debug_pushSnapshot('chatStore:push', 'after len=' + this.messages.length)
       })
       if (this.messages.length > 1000) {
         this.messages.splice(0, this.messages.length - 1000)

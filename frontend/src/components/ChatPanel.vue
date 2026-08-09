@@ -59,12 +59,9 @@ const inputText = ref('')
 // 消息列表自动滚动到底部
 watch(() => chatStore.messages.length, (newLen, oldLen) => {
   console.log('[ChatPanel] messages.length 变化: ' + oldLen + ' -> ' + newLen)
-  window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:watch', oldLen + '->' + newLen)
   nextTick(() => {
-    window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:nextTick', 'before scroll')
     // requestAnimationFrame 延迟到 JCEF 渲染管线完成后执行，避免同步 reflow 触发原生错误
     requestAnimationFrame(() => {
-      window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:rAF', 'scrollTop')
       const el = messageListRef.value
       if (el) el.scrollTop = el.scrollHeight
     })
@@ -283,7 +280,6 @@ onMounted(() => {
     console.warn('[ChatPanel] 初始化获取鱼塘列表失败:', e)
   })
   if (chatStore.isEmpty) {
-    window.__debug_pushSnapshot && window.__debug_pushSnapshot('ChatPanel:onMounted', 'addMessage helpText')
     chatStore.addMessage(helpStore.helpText)
   }
   inputRef.value?.focus()

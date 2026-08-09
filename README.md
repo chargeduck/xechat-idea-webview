@@ -22,8 +22,7 @@ xechat-idea-webview/
 │   │   ├── main.js                    # 应用入口
 │   │   ├── api.js                     # JSBridge / WebSocket 传输封装
 │   │   ├── store.js                   # 全局事件总线
-│   │   ├── utils/debug.js             # 调试浮层（Ctrl+Shift+D）
-│   │   ├── components/                # Vue 组件
+│   │   │   ├── components/                # Vue 组件
 │   │   ├── styles/                    # 全局样式
 │   │   ├── games/                     # 内置游戏渲染器
 │   │   └── tools/                     # 内置工具渲染器
@@ -92,39 +91,7 @@ npm run build        # Vite 构建 + 内联脚本到插件 resources/web/index.h
 4. 重启后浏览器访问 `http://localhost:9222`
 5. 在远程调试页面中选择对应的 JCEF 页面
 
-### 方法二：vConsole（页面内轻量调试面板）
 
-已内置到 `main.js`，**仅在 `file://` 协议（JCEF 环境）下自动启用**。浏览器开发模式下不会加载，不影响日常开发。
-
-使用方式：RunIde 启动后，插件页面右下角会出现绿色 `vConsole` 按钮，点击展开调试面板：
-
-| 标签 | 功能 |
-|------|------|
-| Console | 查看所有 `console.log/error/warn`，包括 `[Vue errorHandler]` 捕获的错误 |
-| Network | 查看网络请求（fetch / XHR） |
-| Element | 查看 DOM 结构和样式 |
-| Storage | 查看 localStorage / sessionStorage / Cookie |
-
-### 调试工具对比
-
-| 特性 | JCEF DevTools | vConsole |
-|------|:---:|:---:|
-| Console | 完整 | 完整 |
-| Network | 完整 | 完整 |
-| Elements | 完整 | 基础 |
-| Sources / 断点调试 | 完整 | 不支持 |
-| Performance | 完整 | 不支持 |
-| 需额外配置 | 不需要（代码自动弹窗） | 不需要（自动启用） |
-| 适用场景 | 深度排查（堆栈追踪、断点、性能分析） | 快速查看日志和网络请求 |
-
-### 调试浮层（Ctrl+Shift+D）
-
-前端 `utils/debug.js` 提供了页面内调试浮层，按 `Ctrl+Shift+D` 打开，可查看：
-- 历史 console 日志
-- 错误快照（DOM 操作记录、异步回调栈）
-- 实时日志流
-
-调试浮层在 JCEF 和浏览器环境下均可使用。
 
 ---
 
