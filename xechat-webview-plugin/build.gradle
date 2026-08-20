@@ -48,8 +48,8 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity('2025.2')
-        bundledPlugins(['com.intellij.java', 'intellij.platform.ui.jcef'])
+        intellijIdea('2025.3.1')
+        bundledPlugins(['com.intellij.java'])
     }
 
     testImplementation "junit:junit:$junitVersion"
@@ -91,14 +91,14 @@ intellijPlatform {
 
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = '251'
+            sinceBuild = '253'
         }
     }
 }
 
 // verifyPlugin：忽略 JxBrowser（com.teamdev）无法解析的误报，JxBrowser 运行时由 CDN 动态加载
 tasks.named('verifyPlugin') {
-    freeArgs += ['-ignore', 'com.teamdev']
+    ignoredProblemsFile = file("${projectDir}/verify-ignored-problems.txt")
 }
 
 tasks.withType(JavaCompile) {

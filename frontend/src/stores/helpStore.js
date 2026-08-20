@@ -23,8 +23,9 @@ export const useHelpStore = defineStore('help', {
 | **#admin** | 管控 | | |
 
 ## 快捷键说明
+
 | 序号| 快捷键| 说明|
-|------|------|------|------|
+|------|------|------|
 |1 | \`ctrl alt shift -\`| 降低透明度 |
 |2 | \`ctrl alt shift +\`| 提高透明度 |
 |3 | \`ctrl alt shift 0\`| 全透明 |
