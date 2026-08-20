@@ -27,15 +27,18 @@ export class WebSocketTransport {
   async connect() {
     if (this._ws && this._ws.readyState === WebSocket.OPEN) return
     this._intentionalClose = false
-    this._reconnectAttempts = 0
     var self = this
+
+    console.log('[WS][connect] 尝试连接 url=' + this._url + ', readyState=' + (this._ws ? this._ws.readyState : '(none)'))
 
     return new Promise(function(resolve, reject) {
       var ws = new WebSocket(self._url)
       self._ws = ws
+      console.log('[WS][connect] WebSocket 实例已创建, url=' + self._url + ', readyState=' + ws.readyState)
 
       ws.onopen = function() {
-        console.log('[WS] connected to', self._url)
+        console.log('[WS][connect] onopen 触发, connected to', self._url)
+        self._reconnectAttempts = 0
         self._startHeartbeat()
         self._emit('connected', {})
         resolve()
@@ -51,16 +54,17 @@ export class WebSocketTransport {
       }
 
       ws.onclose = function(event) {
-        console.log('[WS] disconnected, code:', event.code)
+        // 握手失败(如 302)时 onerror 先触发、onclose 随后触发，event 里带 close code
+        console.log('[WS][connect] onclose 触发, code=' + event.code + ', reason=' + event.reason + ', wasClean=' + event.wasClean)
         self._stopHeartbeat()
         self._emit('disconnected', { code: event.code })
         if (!self._intentionalClose) self._scheduleReconnect()
       }
 
-      ws.onerror = function() {
+      ws.onerror = function(err) {
         // 初始化连接失败不阻断 app 启动（浏览器环境通常无后端服务）
         // 重连由 onclose → _scheduleReconnect 处理，或用户通过 #login 手动连接
-        console.warn('[WS] initial connection failed, server may not be running:', self._url)
+        console.warn('[WS][connect] onerror 触发, url=' + self._url, err && err.message ? err.message : err)
         resolve()
       }
     })
@@ -131,6 +135,7 @@ export class WebSocketTransport {
     var wsPort = parseInt(port) + 1
     var url = 'ws://' + host + ':' + wsPort + '/xechat'
     this._url = url
+    console.log('[WS][loginToServer] host=' + host + ', port=' + port + ', wsPort=' + wsPort + ', url=' + url + ', loginPayload=' + JSON.stringify(loginPayload))
 
     // 断开旧连接
     this.disconnect()
@@ -141,9 +146,10 @@ export class WebSocketTransport {
     return new Promise(function(resolve, reject) {
       var ws = new WebSocket(url)
       self._ws = ws
+      console.log('[WS][loginToServer] WebSocket 实例已创建, url=' + url + ', readyState=' + ws.readyState)
 
       ws.onopen = function() {
-        console.log('[WS] connected to', url)
+        console.log('[WS][loginToServer] onopen 触发, connected to', url)
         self._startHeartbeat()
         self._emit('connected', {})
 
@@ -164,14 +170,13 @@ export class WebSocketTransport {
       }
 
       ws.onclose = function(event) {
-        console.log('[WS] disconnected, code:', event.code)
+        console.log('[WS][loginToServer] onclose 触发, code=' + event.code + ', reason=' + event.reason + ', wasClean=' + event.wasClean)
         self._stopHeartbeat()
-        self._emit('disconnected', { code: event.code })
         if (!self._intentionalClose) self._scheduleReconnect()
       }
 
       ws.onerror = function(err) {
-        console.error('[WS] connection error:', err)
+        console.error('[WS][loginToServer] onerror 触发, url=' + url, err && err.message ? err.message : err)
         reject(err)
       }
     })

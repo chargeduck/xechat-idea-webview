@@ -30,7 +30,10 @@ export class JSBridgeTransport {
 
   execCommand(cmd) {
     if (window.xechat && window.xechat.execCommand) {
+      console.log('[JSBridge][execCommand] 转发到 Java: ' + cmd)
       window.xechat.execCommand(cmd)
+    } else {
+      console.warn('[JSBridge][execCommand] window.xechat.execCommand 不存在, 丢弃命令: ' + cmd + ', hasXechatNS=' + !!window.xechat)
     }
   }
 

@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { useOnlineUsersStore } from '../stores/onlineUsersStore'
+import { useOnlineUsersStore } from '@/stores/onlineUsersStore'
 
 const onlineStore = useOnlineUsersStore()
 

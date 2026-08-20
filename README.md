@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 71dfd8187db27d1ff1c323fdb6b34ebf_4679f16d93ee11f1bcfc525400e6dd8f
-    ReservedCode1: QSquWjjLeYcwI9CrmweEHhrjdhB61rvC6POFmoC+Pfno4H8kAlC4xklZbeYWDik8YhcUZ0YE3qCzkJdldpnWzLP5ko09dknFL4tpIrEA1PwqjXJJgNdCSIpecRBrNcHQb6JgGdKDyMCKEQPcgUQfkft14xe9AgiyTsuj5zsfHNy7nR9JTO4Kv0qnJd8=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 71dfd8187db27d1ff1c323fdb6b34ebf_4679f16d93ee11f1bcfc525400e6dd8f
-    ReservedCode2: QSquWjjLeYcwI9CrmweEHhrjdhB61rvC6POFmoC+Pfno4H8kAlC4xklZbeYWDik8YhcUZ0YE3qCzkJdldpnWzLP5ko09dknFL4tpIrEA1PwqjXJJgNdCSIpecRBrNcHQb6JgGdKDyMCKEQPcgUQfkft14xe9AgiyTsuj5zsfHNy7nR9JTO4Kv0qnJd8=
----
-
 # xechat-idea-webview
 
 基于 Vue 3 + Element Plus 的 IntelliJ IDEA 插件前端，通过 JCEF 嵌入式浏览器渲染 UI，支持 JSBridge 和 WebSocket 双传输模式。

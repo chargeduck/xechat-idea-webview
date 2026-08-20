@@ -282,6 +282,11 @@ on('disconnected', () => {
     state.online = false
     state.onlineCount = 0
     useOnlineUsersStore().clear()
+    var msg = { text: '连接已断开', type: 'system' }
+    if (_chatStoreBridge) {
+        _chatStoreBridge.addMessage(msg.text, msg.type)
+    }
+    state.messages.push({ text: msg.text, time: new Date().toLocaleTimeString(), type: msg.type })
 })
 
 // 监听 Java NotifyUtils 推送的系统通知事件，弹出 ElMessage

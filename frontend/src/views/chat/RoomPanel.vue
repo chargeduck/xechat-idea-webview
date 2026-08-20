@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { state } from '../store.js'
+import { state } from '@/store.js'
 
 function ready() {
   window.xechat && window.xechat.roomReady()

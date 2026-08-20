@@ -35,12 +35,6 @@ import './tools/reader.js'
     app.use(pinia)
     app.use(ElementPlus, { locale: zhCn })
 
-    // Vue 错误捕获（JCEF 中 Script error. 无堆栈时唯一能拿到真实错误的途径）
-    app.config.errorHandler = function(err, instance, info) {
-      console.error('[Vue errorHandler] ' + info + ':', err)
-      if (err && err.stack) console.error('[Vue errorHandler] STACK:', err.stack.slice(0, 500))
-    }
-
     // 注册所有 Element Plus 图标
     for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
       app.component(key, component)

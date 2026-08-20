@@ -79,6 +79,7 @@ export function roomLeave() {
 
 // === Transport 集成 API ===
 export async function init(config) {
+  console.log('[api.js][init] config=' + JSON.stringify(config) + ', userAgent=' + navigator.userAgent)
   return transport.init(config)
 }
 

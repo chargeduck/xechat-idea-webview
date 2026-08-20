@@ -2,6 +2,7 @@ package cn.xeblog.commons.entity.game.zillionaire.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
@@ -12,6 +13,7 @@ import java.awt.*;
  * @date 2023/3/20 12:01
  * @description
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

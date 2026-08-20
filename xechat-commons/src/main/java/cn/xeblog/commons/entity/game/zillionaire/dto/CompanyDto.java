@@ -1,6 +1,7 @@
 package cn.xeblog.commons.entity.game.zillionaire.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.awt.*;
 
@@ -9,6 +10,7 @@ import java.awt.*;
  * @date 2023/3/28 9:24
  * @description
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class CompanyDto extends PositionDto{
 

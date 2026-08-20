@@ -26,7 +26,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { state, loadTools } from '../store.js'
+import { state, loadTools } from '@/store.js'
 
 onMounted(() => loadTools())
 

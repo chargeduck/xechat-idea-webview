@@ -16,26 +16,53 @@ class TransportManager {
     config = config || {}
     var storedMode = this._readStoredMode()
     this._mode = config.mode || storedMode || 'auto'
+    console.log('[Transport][init] config.mode=' + JSON.stringify(config.mode) + ', storedMode=' + JSON.stringify(storedMode) + ', final mode=' + this._mode)
 
     var useWS = false
     if (this._mode === 'websocket') {
       useWS = true
+      console.log('[Transport][init] 显式配置 websocket 模式，直接使用 WS')
     } else if (this._mode === 'jsbridge') {
       useWS = false
+      console.log('[Transport][init] 显式配置 jsbridge 模式，直接使用 JSBridge')
     } else {
-      // JCEF 环境：cefQuery 在 loadURL 之前就注册好了，比 getState() mock 更可靠
-      // 真实 JSBridge 由 Java 在页面加载完成后注入，此时 getState() 仍是 mock 的 '{}'，
-      // 仅靠 getState() !== '{}' 会误判为浏览器环境，导致 IDEA 插件走到 WebSocket
+      // cefQuery 是 JCEF C++ 层异步注入的 JavaScript 绑定，可能晚于页面首个脚本执行。
+      // 等待其就绪再判定，避免时序竞态导致 IDEA 插件误判为 WebSocket。
+      if (typeof window.cefQuery !== 'function') {
+        console.log('[Transport] cefQuery 未就绪，等待中...')
+        await new Promise(function (resolve) {
+          var attempts = 0
+          var timer = setInterval(function () {
+            if (typeof window.cefQuery === 'function' || ++attempts > 10) {
+              console.log('[Transport] cefQuery 等待结束, attempts=' + attempts + ', typeof=' + typeof window.cefQuery)
+              clearInterval(timer)
+              resolve()
+            }
+          }, 100)
+        })
+      }
+
       var isJCef = typeof window.cefQuery === 'function'
-      var isRealJSBridge = window.xechat
-        && typeof window.xechat.getState === 'function'
-        && (window.xechat.getState() !== '{}' || isJCef)
+      var hasXechatNS = !!window.xechat
+      var hasGetState = !!(window.xechat && typeof window.xechat.getState === 'function')
+      var getStateRaw = ''
+      try {
+        getStateRaw = hasGetState ? window.xechat.getState() : '(no getState)'
+      } catch (e) {
+        getStateRaw = '(getState threw: ' + e.message + ')'
+      }
+      var isRealJSBridge = hasXechatNS && hasGetState && (getStateRaw !== '{}' || isJCef)
+      console.log('[Transport][init] 自动检测: isJCef=' + isJCef + ', hasXechatNS=' + hasXechatNS + ', hasGetState=' + hasGetState + ', getState()=' + getStateRaw + ', isRealJSBridge=' + isRealJSBridge)
       useWS = !isRealJSBridge
+      console.log('[Transport][init] 自动检测结果: useWS=' + useWS)
     }
 
     if (useWS) {
-      this._transport = new WebSocketTransport(config.wsUrl || 'ws://127.0.0.1:1025/xechat')
+      var wsUrl = config.wsUrl || 'ws://127.0.0.1:1025/xechat'
+      console.log('[Transport][init] 创建 WebSocketTransport, url=' + wsUrl)
+      this._transport = new WebSocketTransport(wsUrl)
     } else {
+      console.log('[Transport][init] 创建 JSBridgeTransport')
       this._transport = new JSBridgeTransport()
     }
 

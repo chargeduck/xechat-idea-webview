@@ -112,8 +112,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Plus, ArrowLeft } from '@element-plus/icons-vue'
-import { useTextStyleStore } from '../stores/textStyleStore'
-import { state } from '../store.js'
+import { useTextStyleStore } from '@/stores/textStyleStore'
+import { state } from '@/store.js'
 
 const store = useTextStyleStore()
 

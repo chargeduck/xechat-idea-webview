@@ -27,7 +27,7 @@
           v-model="inputText"
           placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行"
           type="textarea"
-          rows="3"
+          rows="1"
           @keydown.enter="onEnter"
           class="chat-input"
         />
@@ -38,14 +38,14 @@
 
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
-import { useChatStore } from '../stores/chatStore'
-import { useDeviceStore } from '../stores/deviceStore'
-import { useHelpStore } from '../stores/helpStore'
-import { useServerStore } from '../stores/serverStore'
-import { setChatStoreBridge, state } from '../store.js'
-import { transport } from '../transport/transport-manager.js'
-import MarkdownMessage from './MarkdownMessage.vue'
-import StyleSelector from './StyleSelector.vue'
+import { useChatStore } from '@/stores/chatStore'
+import { useDeviceStore } from '@/stores/deviceStore'
+import { useHelpStore } from '@/stores/helpStore'
+import { useServerStore } from '@/stores/serverStore'
+import { setChatStoreBridge, state } from '@/store.js'
+import { transport } from '@/transport/transport-manager.js'
+import MarkdownMessage from '@/components/MarkdownMessage.vue'
+import StyleSelector from '@/components/StyleSelector.vue'
 
 const chatStore = useChatStore()
 const deviceStore = useDeviceStore()
@@ -139,10 +139,19 @@ async function handleLogin(rawText) {
   if (sIdx === -1 && !host && !port) {
     sIdx = 0
   }
+  console.log('[ChatPanel][handleLogin] 解析结果: rawText=' + rawText + ', username=' + username + ', host=' + host + ', port=' + port + ', sIdx=' + sIdx)
 
   // 检查是否是 JSBridge 模式（Java 端 handle login）
-  var isJSBridge = (window.xechat && typeof window.xechat.getState === 'function'
-    && window.xechat.getState() !== '{}')
+  var hasXechatNS = !!window.xechat
+  var hasGetState = !!(window.xechat && typeof window.xechat.getState === 'function')
+  var getStateRaw = ''
+  try {
+    getStateRaw = hasGetState ? window.xechat.getState() : '(no getState)'
+  } catch (e) {
+    getStateRaw = '(getState threw: ' + e.message + ')'
+  }
+  var isJSBridge = hasXechatNS && hasGetState && getStateRaw !== '{}'
+  console.log('[ChatPanel][handleLogin] JSBridge 判定: hasXechatNS=' + hasXechatNS + ', hasGetState=' + hasGetState + ', getState()=' + getStateRaw + ', isJSBridge=' + isJSBridge)
 
   if (isJSBridge) {
     // JSBridge：补上 -s 0 后转发给 Java
@@ -220,6 +229,14 @@ async function send() {
       chatStore.addMessage(helpStore.helpText)
     } else if (text === '#clean') {
       chatStore.clear()
+    } else if (text === '#exit') {
+      if (transport.mode === 'jsbridge') {
+        window.xechat.execCommand('#exit')
+      } else {
+        transport.disconnect()
+      }
+      chatStore.addMessage('已断开连接')
+      state.online = false
     } else if (text.startsWith('#showServer')) {
       chatStore.addMessage('正在获取鱼塘列表...')
       const forceRefresh = text.includes('-c')

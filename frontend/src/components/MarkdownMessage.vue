@@ -6,6 +6,7 @@
 import { computed } from 'vue'
 import MarkdownIt from 'markdown-it'
 import container from 'markdown-it-container'
+import { full as markdownItEmoji } from 'markdown-it-emoji'
 
 const props = defineProps({
   content: { type: String, required: true }
@@ -36,6 +37,9 @@ function createContainer(type, defaultLabel) {
 createContainer('info', 'INFO')
 createContainer('warn', 'WARN')
 createContainer('error', 'ERROR')
+
+// emoji shortcode 支持 :smile: → 😄
+md.use(markdownItEmoji)
 
 // 为所有链接添加 target="_blank"
 const defaultRender = md.renderer.rules.link_open || ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options))
