@@ -150,14 +150,14 @@ async function handleLogin(rawText) {
   } catch (e) {
     getStateRaw = '(getState threw: ' + e.message + ')'
   }
-  var isJSBridge = hasXechatNS && hasGetState && getStateRaw !== '{}'
+  var isJSBridge = (hasXechatNS && hasGetState && getStateRaw !== '{}') || typeof window.cefQuery === 'function'
   console.log('[ChatPanel][handleLogin] JSBridge 判定: hasXechatNS=' + hasXechatNS + ', hasGetState=' + hasGetState + ', getState()=' + getStateRaw + ', isJSBridge=' + isJSBridge)
 
   if (isJSBridge) {
     // JSBridge：补上 -s 0 后转发给 Java
     var cmd = username ? '#login ' + username + ' -s ' + sIdx : rawText + ' -s ' + sIdx
     console.log('[ChatPanel] #login → JSBridge 转发: ' + cmd)
-    window.xechat.execCommand(cmd)
+    transport.execCommand(cmd)
     return
   }
 
@@ -231,7 +231,7 @@ async function send() {
       chatStore.clear()
     } else if (text === '#exit') {
       if (transport.mode === 'jsbridge') {
-        window.xechat.execCommand('#exit')
+        transport.execCommand('#exit')
       } else {
         transport.disconnect()
       }
@@ -258,18 +258,10 @@ async function send() {
       }
     } else if (text.startsWith('#')) {
       console.log('[ChatPanel] → execCommand: ' + text)
-      if (transport.mode === 'jsbridge') {
-        window.xechat.execCommand(text)
-      } else {
-        transport.execCommand(text)
-      }
+      transport.execCommand(text)
     } else {
       console.log('[ChatPanel] → sendMessage: ' + text)
-      if (transport.mode === 'jsbridge') {
-        window.xechat.sendMessage(text)
-      } else {
-        transport.sendMessage(text)
-      }
+      transport.sendMessage(text)
     }
     console.log('[ChatPanel] send() 完成')
   } catch (e) {

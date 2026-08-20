@@ -28,13 +28,49 @@ export class JSBridgeTransport {
     this._emit('connected', {})
   }
 
+  /**
+   * 判断 window.xechat 是否为真实 Java 桥接。
+   * DEV mock 的 getState() 返回 '{}'，真实注入桥接返回完整 StateInfo JSON。
+   */
+  _isRealBridge() {
+    var x = window.xechat
+    if (!x || typeof x.execCommand !== 'function') return false
+    try {
+      var s = typeof x.getState === 'function' ? x.getState() : ''
+      return s !== '{}'
+    } catch (e) {
+      return false
+    }
+  }
+
+  /**
+   * cefQuery 直连 Java（CefMessageRouter 在 loadURL 前注册，页面加载即就绪）。
+   * 即使 register() 注入 window.xechat 失败，命令仍能到达 Java handleQuery。
+   */
+  _cefCall(method, args) {
+    if (typeof window.cefQuery !== 'function') {
+      console.warn('[JSBridge][cefQuery] cefQuery 不可用，丢弃调用: ' + method)
+      return
+    }
+    window.cefQuery({
+      request: JSON.stringify({ method: method, args: args || [] }),
+      onSuccess: function(resp) {
+        console.log('[JSBridge][cefQuery] ' + method + ' 成功: ' + resp)
+      },
+      onFailure: function(code, msg) {
+        console.error('[JSBridge][cefQuery] ' + method + ' 失败: code=' + code + ', msg=' + msg)
+      }
+    })
+  }
+
   execCommand(cmd) {
-    if (window.xechat && window.xechat.execCommand) {
+    if (this._isRealBridge()) {
       console.log('[JSBridge][execCommand] 转发到 Java: ' + cmd)
       window.xechat.execCommand(cmd)
-    } else {
-      console.warn('[JSBridge][execCommand] window.xechat.execCommand 不存在, 丢弃命令: ' + cmd + ', hasXechatNS=' + !!window.xechat)
+      return
     }
+    console.log('[JSBridge][execCommand] window.xechat 非真实桥接（注入未生效），改走 cefQuery 直连: ' + cmd)
+    this._cefCall('execCommand', [cmd])
   }
 
   /**
@@ -48,9 +84,12 @@ export class JSBridgeTransport {
   }
 
   sendMessage(text) {
-    if (window.xechat && window.xechat.sendMessage) {
+    if (this._isRealBridge() && window.xechat.sendMessage) {
       window.xechat.sendMessage(text)
+      return
     }
+    console.log('[JSBridge][sendMessage] 非真实桥接，改走 cefQuery 直连: ' + text)
+    this._cefCall('sendMessage', [text])
   }
 
   disconnect() { /* JSBridge lifecycle managed by JCEF */ }

@@ -78,6 +78,7 @@ public class WebViewPanel extends JPanel {
                 CefBrowser cefBrowser = browser.getCefBrowser();
                 if (cefBrowser != null) {
                     // CefMessageRouter 必须在 loadURL 前注册，否则渲染进程不会创建 window.cefQuery
+                    log.info("JCEF WebView 开始注册 JSBridge");
                     jsBridge.setupMessageRouter();
 
                     // 自动打开 JCEF DevTools（调试用），失败不影响主流程
@@ -97,6 +98,10 @@ public class WebViewPanel extends JPanel {
                         }
                     }, cefBrowser);
                     cefBrowser.loadURL(url);
+
+                    // 兜底：onLoadEnd 若因时序/缓存未触发，页面加载完成后强制注册 JSBridge，
+                    // 避免 window.xechat 注入永远不生效（前端已另有 cefQuery 直连兜底）。
+                    scheduleRegisterRetry();
                 } else {
                     log.error("JCEF CefBrowser 为 null，无法加载页面");
                 }
@@ -109,10 +114,10 @@ public class WebViewPanel extends JPanel {
                 removeAll();
                 JLabel errorLabel = new JLabel(
                         "<html><div style='text-align:center;padding:30px;'>" +
-                        "<h2>JCEF 初始化失败</h2>" +
-                        "<p>" + e.getMessage() + "</p>" +
-                        "<p>请确认 IDE 支持 JCEF（IntelliJ IDEA 2020.2+）</p>" +
-                        "</div></html>",
+                                "<h2>JCEF 初始化失败</h2>" +
+                                "<p>" + e.getMessage() + "</p>" +
+                                "<p>请确认 IDE 支持 JCEF（IntelliJ IDEA 2020.2+）</p>" +
+                                "</div></html>",
                         SwingConstants.CENTER);
                 add(errorLabel, BorderLayout.CENTER);
                 revalidate();
@@ -128,6 +133,34 @@ public class WebViewPanel extends JPanel {
         if (jsBridge != null && !jsBridge.isRegistered()) {
             jsBridge.register();
         }
+    }
+
+    /**
+     * 兜底注册：onLoadEnd 可能因时序/缓存未触发（页面已加载但 register 未执行）。
+     * 每 1s 检查一次，页面停止加载且未注册时强制注册；注册成功后自动停止。
+     */
+    private void scheduleRegisterRetry() {
+        log.info("JCEF WebView 开始兜底注册 JSBridge");
+        Timer timer = new Timer(1000, e -> {
+            try {
+                if (jsBridge == null || jsBridge.isRegistered()) {
+                    ((Timer) e.getSource()).stop();
+                    return;
+                }
+                if (browser == null || browser.getCefBrowser() == null
+                        || browser.getCefBrowser().isLoading()) {
+                    return; // 页面仍在加载，继续等待
+                }
+                log.warn("[WebView] onLoadEnd 未触发 register，执行兜底注册 JSBridge");
+                onPageLoaded();
+                if (jsBridge.isRegistered()) {
+                    ((Timer) e.getSource()).stop();
+                }
+            } catch (Exception ex) {
+                log.warn("[WebView] 兜底注册 JSBridge 异常: {}", ex.getMessage());
+            }
+        });
+        timer.start();
     }
 
     /**
