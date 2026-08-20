@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     id 'java'
     id 'org.jetbrains.intellij.platform'
 }
@@ -49,7 +49,7 @@ repositories {
 dependencies {
     intellijPlatform {
         intellijIdeaCommunity('2025.2')
-        bundledPlugins(['com.intellij.java'])
+        bundledPlugins(['com.intellij.java', 'intellij.platform.ui.jcef'])
     }
 
     testImplementation "junit:junit:$junitVersion"
@@ -91,9 +91,14 @@ intellijPlatform {
 
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = '233'
+            sinceBuild = '251'
         }
     }
+}
+
+// verifyPlugin：忽略 JxBrowser（com.teamdev）无法解析的误报，JxBrowser 运行时由 CDN 动态加载
+tasks.named('verifyPlugin') {
+    freeArgs += ['-ignore', 'com.teamdev']
 }
 
 tasks.withType(JavaCompile) {

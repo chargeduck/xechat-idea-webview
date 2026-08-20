@@ -1,4 +1,4 @@
-<idea-plugin>
+﻿<idea-plugin>
     <id>cn.xeblog.xechat.webview.plugin</id>
     <name>XEChat WebView</name>
     <vendor email="1090172196@qq.com" url="https://xeblog.cn">AnLingYi</vendor>
@@ -23,6 +23,7 @@
     </description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.jcef</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="XEChat" anchor="bottom" secondary="true" doNotActivateOnStart="true"
@@ -33,7 +34,7 @@
                            key="xechat-webview"/>
         <applicationConfigurable parentId="tools" instance="cn.xeblog.plugin.setting.PluginConfigSetting"
                                  id="cn.xeblog.xechat.webview.setting" displayName="XEChat WebView"/>
-        <statusBarWidgetFactory implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
+        <statusBarWidgetFactory id="HardReadWidget" implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
     </extensions>
 
     <projectListeners>
