@@ -30,3 +30,4 @@ replay_pid*
 /xechat-commons/target/
 /xechat-server/target/
 .idea
+.ai/
