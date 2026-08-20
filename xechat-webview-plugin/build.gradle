@@ -100,6 +100,21 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+// 每次 runIde 前清空沙箱 IDEA 日志（idea.log），避免多次运行日志膨胀
+tasks.named('runIde') {
+    doFirst {
+        def sandboxDir = file("${projectDir}/../.intellijPlatform/sandbox/${project.name}")
+        if (sandboxDir.exists()) {
+            fileTree(sandboxDir) {
+                include '*/log/idea.log'
+            }.each { logFile ->
+                logFile.delete()
+                println "[runIde] 已清空日志: ${logFile}"
+            }
+        }
+    }
+}
+
 // 将 Vue 打包产物复制到插件资源目录
 task copyWebDist(type: Copy) {
     from "${projectDir}/../web/dist"

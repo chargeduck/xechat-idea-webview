@@ -12,6 +12,8 @@ import cn.xeblog.commons.entity.game.GameRoomMsgDTO;
 import cn.xeblog.plugin.webview.WebViewPanel;
 import cn.xeblog.plugin.webview.VideoPlayerPanel;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
@@ -21,6 +23,7 @@ import org.cef.handler.CefMessageRouterHandlerAdapter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Type;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -357,12 +360,22 @@ public class JSBridge {
 
     /**
      * 前端拉取到服务器列表后回传，写入 DataCache.serverList
-     * 参数为 JSON 数组：[{name, ip, port}, ...]
+     * 兼容两种 JSON 格式：
+     * 1. 直接数组：[{name, ip, port}, ...]
+     * 2. 包装对象：{code, message, data: [{name, ip, port}, ...]}
      */
     private void updateServerListInternal(String json) {
         try {
-            OnlineServer[] arr = new Gson().fromJson(json, OnlineServer[].class);
-            List<OnlineServer> list = Arrays.asList(arr);
+            Gson gson = new Gson();
+            Type listType = new TypeToken<List<OnlineServer>>() {}.getType();
+            String trimJson = json.trim();
+            List<OnlineServer> list;
+            if (trimJson.startsWith("{")) {
+                JsonObject obj = gson.fromJson(trimJson, JsonObject.class);
+                list = gson.fromJson(obj.get("data"), listType);
+            } else {
+                list = gson.fromJson(trimJson, listType);
+            }
             DataCache.serverList = list;
             log.info("[JSBridge] updateServerList 写入 " + list.size() + " 条服务器");
         } catch (Exception e) {

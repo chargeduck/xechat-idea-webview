@@ -46,6 +46,12 @@ export const useOnlineUsersStore = defineStore('onlineUsers', {
       }
     },
 
+    /** 移除一个用户（USER_STATE 下线） */
+    removeUser(username) {
+      if (!username) return
+      this.users = this.users.filter(u => u.username !== username)
+    },
+
     markWelcomeShown() {
       this.welcomeShown = true
     },

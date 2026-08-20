@@ -22,6 +22,16 @@ export const useHelpStore = defineStore('help', {
 | **#mask [-@ -a -u 昵称 -r 省份 -i IP -c -n]** | 屏蔽管理，-c 解除所有 | **#backgroundImage** | 切换背景图片 |
 | **#admin** | 管控 | | |
 
+## 快捷键说明
+| 序号| 快捷键| 说明|
+|------|------|------|------|
+|1 | \`ctrl alt shift -\`| 降低透明度 |
+|2 | \`ctrl alt shift +\`| 提高透明度 |
+|3 | \`ctrl alt shift 0\`| 全透明 |
+|4 | \`ctrl alt shift 1\`| 全不透明 |
+|5 | \`ctrl alt shift t\`| 切换主题 |
+|6 | \`ctrl alt shift p\`| 紧急模式（老板键）预设图片或网址一键覆盖摸鱼页面 |
+
 > *Tips*: \`{ }\` 必填参数，\`[ ]\` 可选参数，参数以空格分隔。
 
 [开源](https://github.com/anlingyi/xechat-idea)  ·  [更多](https://xeblog.cn/?tag=xechat-idea)`

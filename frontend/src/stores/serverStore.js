@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
+import { transport } from '@/transport/transport-manager.js'
 
 const STORAGE_KEY = 'xechat_server_cache'
 const CACHE_VERSION = 2  // v2: 增加 wsAlive 字段
-// 服务端列表（需服务端配置 Access-Control-Allow-Origin 解决跨域）
-const SERVER_LIST_API_URL = 'https://lesscoding.net/serverList.json'
+// 服务端列表 API 地址（可配置：localStorage 'xechat_server_list_url' 可覆盖，默认走 dld.lesscoding.net/api/server/list）
+const SERVER_LIST_API_URL = (typeof localStorage !== 'undefined' && localStorage.getItem('xechat_server_list_url')) || 'https://dld.lesscoding.net/api/server/list'
 
 function loadCache() {
   try {
@@ -156,12 +157,15 @@ export const useServerStore = defineStore('server', {
       this.loading = true
       try {
         const data = await httpGetJson(SERVER_LIST_API_URL)
-        if (!Array.isArray(data)) throw new Error('API 返回格式异常，期望 JSON 数组')
-        this.servers = data
-        saveCache(data)
-        // 同步到 Java 端 DataCache.serverList（JSBridge 环境），供 #login -s 使用
-        if (window.xechat && typeof window.xechat.updateServerList === 'function') {
-          window.xechat.updateServerList(JSON.stringify(data))
+        // 兼容两种返回格式：裸数组，或后端 Result 包装 {code,msg,data:[...]}
+        const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : null)
+        if (!list) throw new Error('API 返回格式异常，期望 JSON 数组或 {data:[...]}')
+        this.servers = list
+        saveCache(list)
+        // 同步到 Java 端 DataCache.serverList（JSBridge 环境），供 #login -s 使用。
+        // 统一走 transport 层：真实桥接直接调用，注入失败时 cefQuery 兜底直达 Java handleQuery。
+        if (transport.mode === 'jsbridge') {
+          transport.updateServerList(JSON.stringify(data))
         }
         // 等待 TCP 探测完成后再结束 loading
         await this.testServerConnections()

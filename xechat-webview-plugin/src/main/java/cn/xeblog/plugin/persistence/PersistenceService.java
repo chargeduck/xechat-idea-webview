@@ -2,6 +2,7 @@ package cn.xeblog.plugin.persistence;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.xeblog.commons.constants.Commons;
+import cn.xeblog.commons.util.ServerUtils;
 import cn.xeblog.plugin.backgroundImage.BackgroundService;
 import cn.xeblog.plugin.backgroundImage.RandomBackgroundTask;
 import cn.xeblog.plugin.cache.DataCache;
@@ -36,6 +37,7 @@ public class PersistenceService implements PersistentStateComponent<PersistenceD
         data.setHistoryCommandList(CommandHistoryUtils.getHistoryList());
         data.setBrowserConfig(DataCache.browserConfig);
         data.setUuid(DataCache.uuid);
+        data.setFetchServerListUrl(ServerUtils.getFetchServerListUrl());
         return data;
     }
 
@@ -48,6 +50,10 @@ public class PersistenceService implements PersistentStateComponent<PersistenceD
         DataCache.readConfig = ReadConfig.getInstance(state.getReadConfig());
         BeanUtil.copyProperties(data.getBrowserConfig(), DataCache.browserConfig);
         CommandHistoryUtils.setHistoryList(state.getHistoryCommandList());
+        // 回写服务器列表拉取地址（无配置时保持 ServerUtils 默认值）
+        if (data.getFetchServerListUrl() != null) {
+            ServerUtils.setFetchServerListUrl(data.getFetchServerListUrl());
+        }
         ApplicationManager.getApplication().invokeLater(this::initRandomImage);
     }
 

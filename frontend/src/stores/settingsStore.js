@@ -22,8 +22,10 @@ export const DEFAULT_SHORTCUT_PLUS = { ctrl: true, alt: true, shift: true, key: 
 export const DEFAULT_SHORTCUT_MINUS = { ctrl: true, alt: true, shift: true, key: '-' }
 /** 一键切换主题默认快捷键：Ctrl+Alt+Shift+T */
 export const DEFAULT_SHORTCUT_THEME = { ctrl: true, alt: true, shift: true, key: 'T' }
-/** 一键隐藏插件默认快捷键：Ctrl+Alt+Shift+H */
-export const DEFAULT_SHORTCUT_HIDE = { ctrl: true, alt: true, shift: true, key: 'H' }
+export const DEFAULT_SHORTCUT_OPACITY_0 = { ctrl: true, alt: true, shift: true, key: '0' }
+export const DEFAULT_SHORTCUT_OPACITY_1 = { ctrl: true, alt: true, shift: true, key: '1' }
+/** 紧急模式默认快捷键：Ctrl+Alt+Shift+P */
+export const DEFAULT_SHORTCUT_PANIC = { ctrl: true, alt: true, shift: true, key: 'P' }
 
 const defaults = {
   transportMode: 'auto',
@@ -37,8 +39,14 @@ const defaults = {
   shortcutMinus: DEFAULT_SHORTCUT_MINUS,
   /** 一键切换主题快捷键：Ctrl+Alt+Shift+T */
   shortcutTheme: DEFAULT_SHORTCUT_THEME,
-  /** 一键隐藏插件快捷键：Ctrl+Alt+Shift+H */
-  shortcutHide: DEFAULT_SHORTCUT_HIDE
+  /** 透明度 0% 快捷键：Ctrl+Alt+Shift+0 */
+  shortcutOpacity0: DEFAULT_SHORTCUT_OPACITY_0,
+  /** 透明度 100% 快捷键：Ctrl+Alt+Shift+1 */
+  shortcutOpacity1: DEFAULT_SHORTCUT_OPACITY_1,
+  /** 紧急模式快捷键：Ctrl+Alt+Shift+9 */
+  shortcutPanic: DEFAULT_SHORTCUT_PANIC,
+  /** 紧急模式内容：图片 URL 或网页地址，空则不展示内容 */
+  panicUrl: ''
 }
 
 /** 解析辅助：将存储值规整为 { ctrl, alt, shift, key }，非法返回 null */
@@ -72,7 +80,10 @@ export function matchShortcut(raw, event) {
   if (!!event.ctrlKey !== s.ctrl) return false
   if (!!event.altKey !== s.alt) return false
   if (!!event.shiftKey !== s.shift) return false
-  return event.key === s.key
+  if (event.key === s.key) return true
+  // 数字键兼容：Ctrl+Alt+Shift 组合下 event.key 可能变为符号（如 ')' 对应 0），用 e.code 兜底
+  if (/^[0-9]$/.test(s.key) && event.code === 'Digit' + s.key) return true
+  return false
 }
 
 export const useSettingsStore = defineStore('settings', {
@@ -85,7 +96,10 @@ export const useSettingsStore = defineStore('settings', {
       shortcutPlus: normalizeShortcut(saved.shortcutPlus) || defaults.shortcutPlus,
       shortcutMinus: normalizeShortcut(saved.shortcutMinus) || defaults.shortcutMinus,
       shortcutTheme: normalizeShortcut(saved.shortcutTheme) || defaults.shortcutTheme,
-      shortcutHide: normalizeShortcut(saved.shortcutHide) || defaults.shortcutHide
+      shortcutOpacity0: normalizeShortcut(saved.shortcutOpacity0) || defaults.shortcutOpacity0,
+      shortcutOpacity1: normalizeShortcut(saved.shortcutOpacity1) || defaults.shortcutOpacity1,
+      shortcutPanic: normalizeShortcut(saved.shortcutPanic) || defaults.shortcutPanic,
+      panicUrl: saved.panicUrl ?? defaults.panicUrl
     }
   },
 
@@ -114,8 +128,20 @@ export const useSettingsStore = defineStore('settings', {
       this.shortcutTheme = normalizeShortcut(value) || this.shortcutTheme
       this.persist()
     },
-    setShortcutHide(value) {
-      this.shortcutHide = normalizeShortcut(value) || this.shortcutHide
+    setShortcutOpacity0(value) {
+      this.shortcutOpacity0 = normalizeShortcut(value) || this.shortcutOpacity0
+      this.persist()
+    },
+    setShortcutOpacity1(value) {
+      this.shortcutOpacity1 = normalizeShortcut(value) || this.shortcutOpacity1
+      this.persist()
+    },
+    setShortcutPanic(value) {
+      this.shortcutPanic = normalizeShortcut(value) || this.shortcutPanic
+      this.persist()
+    },
+    setPanicUrl(value) {
+      this.panicUrl = (value || '').trim()
       this.persist()
     },
     persist() {
@@ -126,7 +152,10 @@ export const useSettingsStore = defineStore('settings', {
         shortcutPlus: this.shortcutPlus,
         shortcutMinus: this.shortcutMinus,
         shortcutTheme: this.shortcutTheme,
-        shortcutHide: this.shortcutHide
+        shortcutOpacity0: this.shortcutOpacity0,
+        shortcutOpacity1: this.shortcutOpacity1,
+        shortcutPanic: this.shortcutPanic,
+        panicUrl: this.panicUrl
       })
     }
   }

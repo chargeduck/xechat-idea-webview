@@ -1,6 +1,7 @@
 package cn.xeblog.plugin.setting;
 
 import cn.xeblog.commons.constants.Commons;
+import cn.xeblog.commons.util.ServerUtils;
 import cn.xeblog.plugin.persistence.PersistenceService;
 import cn.xeblog.plugin.util.NotifyUtils;
 import com.intellij.openapi.options.ConfigurationException;
@@ -26,6 +27,7 @@ public class PluginConfigSetting implements SearchableConfigurable {
 
     private JTextField tokenInput;
     private JTextField licenseInput;
+    private JTextField fetchServerListUrlInput;
 
     @Override
     public @NotNull
@@ -64,6 +66,17 @@ public class PluginConfigSetting implements SearchableConfigurable {
         JButton licenseBtn = new JButton("申请jxBrowser许可");
         licenseBtn.addActionListener(e -> openApplyUrl());
         configPanel.add(licenseBtn);
+
+        JLabel serverListUrlLabel = new JLabel("ServerListUrl:");
+        serverListUrlLabel.setBounds(10, 60, 180, 30);
+        configPanel.add(serverListUrlLabel);
+
+        fetchServerListUrlInput = new JTextField();
+        fetchServerListUrlInput.setBounds(60, 60, 500, 30);
+        String savedUrl = PersistenceService.getData().getFetchServerListUrl();
+        fetchServerListUrlInput.setText(savedUrl == null || savedUrl.isEmpty()
+                ? ServerUtils.getFetchServerListUrl() : savedUrl);
+        configPanel.add(fetchServerListUrlInput);
         return configPanel;
     }
 
@@ -110,6 +123,11 @@ public class PluginConfigSetting implements SearchableConfigurable {
         }
         if (licenseInput!= null) {
             PersistenceService.getData().setJxBrowserLicense(licenseInput.getText());
+        }
+        if (fetchServerListUrlInput != null) {
+            String url = fetchServerListUrlInput.getText();
+            PersistenceService.getData().setFetchServerListUrl(url);
+            ServerUtils.setFetchServerListUrl(url);
         }
         System.out.println(PersistenceService.getData().getToken());
     }

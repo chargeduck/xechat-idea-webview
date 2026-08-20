@@ -41,6 +41,17 @@
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </projectListeners>
 
+    <actions>
+        <!-- 显示/隐藏 XEChat 工具窗口，无默认快捷键，用户在 Keymap 中自行绑定 -->
+        <action id="cn.xeblog.xechat.webview.toggleToolWindow"
+                class="cn.xeblog.plugin.action.ToggleToolWindowAction"
+                text="Toggle XEChat Tool Window"
+                description="Show or hide the XEChat tool window">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+
+
     <application-components>
         <component>
             <implementation-class>cn.xeblog.plugin.persistence.PersistenceService</implementation-class>

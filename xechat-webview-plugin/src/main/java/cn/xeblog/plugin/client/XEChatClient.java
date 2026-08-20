@@ -12,8 +12,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
  */
 public class XEChatClient {
 
-    private static final String HOST = "chargeduck.lesscoding.net";
-    private static final int PORT = 1024;
+    private static final String HOST = "lesscoding.net";
+    private static final int PORT = 33858;
 
     public static void run(ConnectionAction connectionAction, ClientConnectConsumer consumer) {
         String host = connectionAction.getHost();

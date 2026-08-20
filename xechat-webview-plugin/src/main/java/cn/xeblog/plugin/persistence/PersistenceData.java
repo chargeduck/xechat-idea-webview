@@ -52,4 +52,9 @@ public class PersistenceData {
 
     private String jxBrowserLicense;
 
+    /**
+     * 服务器列表拉取地址（可配置）
+     */
+    private String fetchServerListUrl;
+
 }

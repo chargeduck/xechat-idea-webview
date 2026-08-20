@@ -92,6 +92,19 @@ export class JSBridgeTransport {
     this._cefCall('sendMessage', [text])
   }
 
+  /**
+   * 前端拉取到服务器列表后回传 Java DataCache.serverList（供 #login -s 使用）。
+   * 真实桥接直接调用，注入失败时改走 cefQuery 直连 Java handleQuery。
+   */
+  updateServerList(json) {
+    if (this._isRealBridge() && typeof window.xechat.updateServerList === 'function') {
+      window.xechat.updateServerList(json)
+      return
+    }
+    console.log('[JSBridge][updateServerList] 非真实桥接，改走 cefQuery 直连')
+    this._cefCall('updateServerList', [json])
+  }
+
   disconnect() { /* JSBridge lifecycle managed by JCEF */ }
 
   _emit(type, data) {

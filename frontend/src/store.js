@@ -274,7 +274,12 @@ on('userState', (data) => {
     var user = data.user
     if (!user || !user.username) return
     var onlineStore = useOnlineUsersStore()
-    onlineStore.upsertUser(user)
+    var st = String(data.state || '').toUpperCase()
+    if (st === 'OFFLINE') {
+      onlineStore.removeUser(user.username)
+    } else {
+      onlineStore.upsertUser(user)
+    }
     state.onlineCount = onlineStore.count
 })
 

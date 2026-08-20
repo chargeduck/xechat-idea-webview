@@ -20,15 +20,35 @@
 
     <!-- 底部：命令行输入区域 -->
     <div class="input-area">
+      <!-- @ 提及弹层 -->
+      <div class="at-panel" v-if="atPanelVisible">
+        <div v-if="atFilteredUsers.length === 0" class="at-empty">无匹配用户</div>
+        <div
+          v-for="(u, i) in atFilteredUsers"
+          :key="u.username"
+          class="at-item"
+          :class="{ active: i === atActiveIndex }"
+          @mousedown.prevent="selectAtUser(u)"
+          @mouseenter="atActiveIndex = i"
+        >
+          <span class="at-status">{{ atStatusIcon(u.status) }}</span>
+          <span class="at-name">{{ u.username }}</span>
+          <span v-if="u.shortRegion" class="at-region">[{{ u.shortRegion }}]</span>
+        </div>
+      </div>
       <div class="input-row">
         <StyleSelector @select="onStyleSelect" />
         <el-input
           ref="inputRef"
           v-model="inputText"
-          placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行"
+          placeholder="输入命令或消息，Enter 发送 / Shift+Enter 换行 / @ 提及在线用户"
           type="textarea"
           rows="1"
+          @input="onInput"
+          @keydown="onInputKeydown"
           @keydown.enter="onEnter"
+          @compositionstart="onCompositionStart"
+          @compositionend="onCompositionEnd"
           class="chat-input"
         />
       </div>
@@ -37,11 +57,13 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useChatStore } from '@/stores/chatStore'
 import { useDeviceStore } from '@/stores/deviceStore'
 import { useHelpStore } from '@/stores/helpStore'
 import { useServerStore } from '@/stores/serverStore'
+import { useOnlineUsersStore } from '@/stores/onlineUsersStore'
+import { useUserStatusStore } from '@/stores/userStatusStore'
 import { setChatStoreBridge, state } from '@/store.js'
 import { transport } from '@/transport/transport-manager.js'
 import MarkdownMessage from '@/components/MarkdownMessage.vue'
@@ -51,6 +73,8 @@ const chatStore = useChatStore()
 const deviceStore = useDeviceStore()
 const helpStore = useHelpStore()
 const serverStore = useServerStore()
+const onlineUsersStore = useOnlineUsersStore()
+const userStatusStore = useUserStatusStore()
 
 const messageListRef = ref(null)
 const inputRef = ref(null)
@@ -164,11 +188,11 @@ async function handleLogin(rawText) {
   // WebSocket 模式：前端解析服务器
   if (sIdx >= 0) {
     if (serverStore.servers.length === 0) {
-      chatStore.addMessage('正在获取鱼塘列表...')
+      console.log('[ChatPanel] 正在获取鱼塘列表...')
       try {
         await serverStore.fetchServers(false)
       } catch (e) {
-        chatStore.addMessage('获取鱼塘列表失败: ' + e.message)
+        console.error('[ChatPanel] 获取鱼塘列表失败: ' + e.message)
         return
       }
     }
@@ -193,7 +217,7 @@ async function handleLogin(rawText) {
 
   if (!username) username = 'User-' + Date.now().toString(36)
 
-  chatStore.addMessage('正在连接服务器 ' + host + ':' + port + ' ...')
+  console.log('[ChatPanel] 正在连接服务器 ' + host + ':' + port + ' ...')
 
   var loginPayload = {
     action: 'LOGIN',
@@ -213,7 +237,116 @@ async function handleLogin(rawText) {
     state.username = username
     chatStore.addMessage('已连接到 ' + host + ':' + port + '，登录中...')
   } catch (e) {
-    chatStore.addMessage('连接服务器失败: ' + (e.message || '未知错误'))
+    console.error('[ChatPanel] 连接服务器失败: ' + (e.message || '未知错误'))
+  }
+}
+
+// ===== @ 提及（类似微信 @ 人）=====
+const atPanelVisible = ref(false)
+const atActiveIndex = ref(0)
+const atKeyword = ref('')
+const atTokenStart = ref(-1)
+const atComposing = ref(false)
+
+// 过滤后的可 @ 用户列表：排除自己，支持按输入内容筛选
+const atFilteredUsers = computed(() => {
+  const kw = atKeyword.value.toLowerCase().trim()
+  let list = onlineUsersStore.users.filter(u => u.username && u.username !== state.username)
+  if (kw) {
+    list = list.filter(u => (u.username || '').toLowerCase().includes(kw))
+  }
+  return list
+})
+
+function _atTextarea() {
+  const el = inputRef.value && inputRef.value.$el
+  return el ? el.querySelector('textarea') : null
+}
+
+/**
+ * 检测光标前是否为 @ 触发状态：
+ * 取光标所在 token（往前找空白符分隔），若以 @ 开头则进入提及模式。
+ */
+function detectAtMention() {
+  if (atComposing.value) return
+  const ta = _atTextarea()
+  if (!ta) return
+  const pos = ta.selectionStart
+  const text = inputText.value
+  let start = pos
+  while (start > 0 && text[start - 1] !== ' ' && text[start - 1] !== '\n' && text[start - 1] !== '\t') start--
+  const token = text.slice(start, pos)
+  if (token.charAt(0) === '@') {
+    atKeyword.value = token.slice(1)
+    atTokenStart.value = start
+    atActiveIndex.value = 0
+    atPanelVisible.value = true
+  } else {
+    atPanelVisible.value = false
+  }
+}
+
+function onInput() {
+  if (atComposing.value) return
+  detectAtMention()
+}
+
+function onCompositionStart() {
+  atComposing.value = true
+}
+
+function onCompositionEnd() {
+  atComposing.value = false
+  detectAtMention()
+}
+
+/** 弹层打开时的方向键 / Esc 处理 */
+function onInputKeydown(e) {
+  if (!atPanelVisible.value) return
+  if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (atFilteredUsers.value.length) {
+      atActiveIndex.value = (atActiveIndex.value - 1 + atFilteredUsers.value.length) % atFilteredUsers.value.length
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    if (atFilteredUsers.value.length) {
+      atActiveIndex.value = (atActiveIndex.value + 1) % atFilteredUsers.value.length
+    }
+  } else if (e.key === 'Escape') {
+    e.preventDefault()
+    atPanelVisible.value = false
+  }
+}
+
+/** 选中用户：将 @关键字 替换为 @用户名，光标移到其后 */
+function selectAtUser(u) {
+  if (!u) return
+  const text = inputText.value
+  const ta = _atTextarea()
+  const pos = ta ? ta.selectionStart : text.length
+  let end = pos
+  while (end < text.length && text[end] !== ' ' && text[end] !== '\n' && text[end] !== '\t') end++
+  const replacement = '@' + u.username + ' '
+  const newText = text.slice(0, atTokenStart.value) + replacement + text.slice(end)
+  inputText.value = newText
+  atPanelVisible.value = false
+  nextTick(() => {
+    const t = _atTextarea()
+    if (t) {
+      const caret = atTokenStart.value + replacement.length
+      t.focus()
+      t.setSelectionRange(caret, caret)
+    }
+  })
+}
+
+function atStatusIcon(s) {
+  switch (s) {
+    case 'FISHING': return '🎣'
+    case 'WORKING': return '💼'
+    case 'PLAYING': return '🎮'
+    default: return '🟢'
   }
 }
 
@@ -246,6 +379,8 @@ async function send() {
       } catch (e) {
         chatStore.addMessage('鱼塘列表获取失败: ' + e.message)
       }
+    } else if (text.startsWith('#showStatus')) {
+      chatStore.addMessage(userStatusStore.table)
     } else if (text.startsWith('#login')) {
       await handleLogin(text)
     } else if (text.startsWith('#loging')) {
@@ -271,12 +406,18 @@ async function send() {
   inputText.value = ''
 }
 
-// Enter 发送，Shift+Enter 换行
+// Enter 发送，Shift+Enter 换行；@ 弹层打开时 Enter 选中当前高亮用户
 function onEnter(e) {
   if (e.shiftKey) {
     return
   }
   e.preventDefault()
+  if (atPanelVisible.value) {
+    if (atFilteredUsers.value.length > 0) {
+      selectAtUser(atFilteredUsers.value[atActiveIndex.value])
+    }
+    return
+  }
   send()
 }
 
@@ -388,6 +529,7 @@ onMounted(() => {
 
 /* ===== 底部输入区域 ===== */
 .input-area {
+  position: relative;
   border-top: 1px solid var(--border-color);
   padding: 8px 12px;
   background: var(--bg-secondary);
@@ -401,5 +543,57 @@ onMounted(() => {
 
 .input-row .chat-input {
   flex: 1;
+}
+
+/* ===== @ 提及弹层 ===== */
+.at-panel {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(100% + 4px);
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  z-index: 20;
+}
+
+.at-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.at-item.active,
+.at-item:hover {
+  background: var(--bg-hover, rgba(128, 128, 128, 0.12));
+}
+
+.at-status {
+  font-size: 13px;
+  width: 18px;
+  text-align: center;
+}
+
+.at-name {
+  font-weight: 500;
+}
+
+.at-region {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.at-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 </style>

@@ -19,7 +19,6 @@ public enum Command {
             return "登录，" + this.getCommand() + " {昵称} [-s {鱼塘编号} -h {服务端IP} -p {服务端端口} -c (清理缓存)]";
         }
     },
-    SHOW_STATUS("showStatus", "查看可用状态值"),
     SET_STATUS("setStatus") {
         @Override
         public String getDesc() {

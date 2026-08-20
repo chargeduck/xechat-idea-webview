@@ -97,6 +97,13 @@ class TransportManager {
     if (this._transport) this._transport.sendMessage(text)
   }
 
+  /** 服务器列表回传 Java（JSBridge 模式写入 DataCache.serverList） */
+  updateServerList(json) {
+    if (this._transport && this._transport.updateServerList) {
+      this._transport.updateServerList(json)
+    }
+  }
+
   on(type, handler) {
     if (!this._handlers[type]) this._handlers[type] = []
     this._handlers[type].push(handler)
