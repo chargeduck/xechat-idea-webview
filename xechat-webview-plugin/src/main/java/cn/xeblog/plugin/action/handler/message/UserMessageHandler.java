@@ -106,42 +106,63 @@ public class UserMessageHandler extends AbstractMessageHandler<UserMsgDTO> {
     private void renderImage(Response<UserMsgDTO> response) {
         UserMsgDTO body = response.getBody();
         String fileName = (String) body.getContent();
-        String filePath = IMAGES_DIR + "/" + fileName;
-        boolean existFile = new File(filePath).exists();
 
         ConsoleAction.atomicExec(() -> {
             renderName(response);
-            if (existFile) {
-                ConsoleAction.renderText("[查看图片](" + filePath + ")\n");
-            } else {
-                ConsoleAction.renderText("[图片下载中...]\n");
-                String finalFilePath = filePath;
-                GlobalThreadPool.execute(() -> {
-                    ReactAction.request(new DownloadReact(fileName), React.DOWNLOAD, 300,
-                            new ReactResultConsumer<DownloadReactResult>() {
-                                @Override
-                                public void doSucceed(DownloadReactResult result) {
-                                    File imageFile = new File(finalFilePath);
-                                    if (!imageFile.exists()) {
-                                        FileUtil.mkdir(IMAGES_DIR);
-                                        try (FileOutputStream out = new FileOutputStream(imageFile)) {
-                                            out.write(result.getBytes());
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                    ConsoleAction.renderText("[图片已下载](" + finalFilePath + ")\n");
-                                    ApplicationManager.getApplication().invokeLater(
-                                            () -> OpenFileAction.openFile(finalFilePath, DataCache.project));
-                                }
-
-                                @Override
-                                public void doFailed(String msg) {
-                                    ConsoleAction.showSimpleMsg("图片下载失败！原因：" + msg);
-                                }
-                            });
-                });
-            }
+            // 仅渲染下载按钮，点击后由前端经 JSBridge 触发 downloadImage
+            ConsoleAction.renderText("[下载图片](xechat-download://" + encodeFileName(fileName) + ")\n");
         });
+    }
+
+    /**
+     * 下载图片：本地已存在则直接打开，否则从服务器下载后打开。
+     * 由前端点击"下载图片"按钮经 JSBridge 调用。
+     */
+    public static void downloadImage(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return;
+        }
+        String filePath = IMAGES_DIR + "/" + fileName;
+        if (new File(filePath).exists()) {
+            ApplicationManager.getApplication().invokeLater(
+                    () -> OpenFileAction.openFile(filePath, DataCache.project));
+            return;
+        }
+        ConsoleAction.renderText("[图片下载中...]\n");
+        GlobalThreadPool.execute(() -> {
+            ReactAction.request(new DownloadReact(fileName), React.DOWNLOAD, 300,
+                    new ReactResultConsumer<DownloadReactResult>() {
+                        @Override
+                        public void doSucceed(DownloadReactResult result) {
+                            File imageFile = new File(filePath);
+                            if (!imageFile.exists()) {
+                                FileUtil.mkdir(IMAGES_DIR);
+                                try (FileOutputStream out = new FileOutputStream(imageFile)) {
+                                    out.write(result.getBytes());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            ConsoleAction.renderText("[图片已下载](" + filePath + ")\n");
+                            ApplicationManager.getApplication().invokeLater(
+                                    () -> OpenFileAction.openFile(filePath, DataCache.project));
+                        }
+
+                        @Override
+                        public void doFailed(String msg) {
+                            ConsoleAction.showSimpleMsg("图片下载失败！原因：" + msg);
+                        }
+                    });
+        });
+    }
+
+    /** 文件名编码，避免破坏 xechat-download:// 协议解析 */
+    private static String encodeFileName(String fileName) {
+        return fileName
+                .replace(" ", "%20")
+                .replace("(", "%28")
+                .replace(")", "%29")
+                .replace("[", "%5B")
+                .replace("]", "%5D");
     }
 }

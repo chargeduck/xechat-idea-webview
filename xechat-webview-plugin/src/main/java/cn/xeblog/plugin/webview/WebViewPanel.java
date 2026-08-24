@@ -1,9 +1,15 @@
 package cn.xeblog.plugin.webview;
 
 import cn.xeblog.plugin.webview.bridge.JSBridge;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.intellij.ui.jcef.JBCefBrowserBuilder;
 import com.intellij.ui.jcef.JBCefClient;
+import com.intellij.util.io.HttpRequests;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.cef.CefApp;
@@ -30,6 +36,7 @@ public class WebViewPanel extends JPanel {
     private JSBridge jsBridge;
     private String currentUrl;
     private volatile boolean initialized = false;
+    private volatile boolean devtoolsUrlLogged = false;
 
     private WebViewPanel() {
         setLayout(new BorderLayout());
@@ -81,19 +88,15 @@ public class WebViewPanel extends JPanel {
                     log.info("JCEF WebView 开始注册 JSBridge");
                     jsBridge.setupMessageRouter();
 
-                    // 自动打开 JCEF DevTools（调试用），失败不影响主流程
-                    try {
-                        browser.openDevtools();
-                        log.info("JCEF DevTools 已自动打开");
-                    } catch (Exception e) {
-                        log.warn("JCEF DevTools 打开失败: {}", e.getMessage());
-                    }
-
                     client.addLoadHandler(new CefLoadHandlerAdapter() {
                         @Override
                         public void onLoadEnd(CefBrowser cb, CefFrame frame, int httpStatusCode) {
                             if (frame.isMain()) {
-                                SwingUtilities.invokeLater(() -> onPageLoaded());
+                                SwingUtilities.invokeLater(() -> {
+                                    // 不再自动打开 DevTools（白屏且会卡住），打印调试地址后用系统 Chrome 调试
+                                    logDevToolsUrl();
+                                    onPageLoaded();
+                                });
                             }
                         }
                     }, cefBrowser);
@@ -161,6 +164,40 @@ public class WebViewPanel extends JPanel {
             }
         });
         timer.start();
+    }
+
+    /**
+     * 打印 JCEF DevTools 调试地址，用系统 Chrome 打开即可调试页面。
+     * JCEF 自带 DevTools 窗口会白屏（bundled 资源缺失 + appspot 被墙），改用
+     * devtools:// 协议让 Chrome 使用本地内置前端直连调试端口，仅打印一次。
+     */
+    private void logDevToolsUrl() {
+        if (devtoolsUrlLogged) {
+            return;
+        }
+        devtoolsUrlLogged = true;
+        int port = Registry.get("ide.browser.jcef.debug.port").asInteger();
+        new Thread(() -> {
+            try {
+                String resp = HttpRequests.request("http://127.0.0.1:" + port + "/json/list")
+                        .connectTimeout(3000)
+                        .readTimeout(3000)
+                        .readString();
+                JsonArray targets = JsonParser.parseString(resp).getAsJsonArray();
+                for (JsonElement element : targets) {
+                    JsonObject target = element.getAsJsonObject();
+                    if ("page".equals(target.get("type").getAsString())) {
+                        String id = target.get("id").getAsString();
+                        log.info("JCEF DevTools 调试地址（用系统 Chrome 打开）: "
+                                + "devtools://devtools/bundled/inspector.html?ws=127.0.0.1:{}/devtools/page/{}", port, id);
+                        return;
+                    }
+                }
+                log.warn("JCEF DevTools 调试地址获取失败: {} /json/list 无 page target", port);
+            } catch (Exception e) {
+                log.warn("JCEF DevTools 调试地址获取失败: {}", e.getMessage());
+            }
+        }, "devtools-url-fetch").start();
     }
 
     /**
