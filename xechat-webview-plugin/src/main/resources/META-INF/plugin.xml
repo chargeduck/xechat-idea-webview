@@ -32,7 +32,7 @@
                            displayType="BALLOON"/>
         <applicationConfigurable parentId="tools" instance="cn.xeblog.plugin.setting.PluginConfigSetting"
                                  id="cn.xeblog.xechat.webview.setting" displayName="xechat-webview"/>
-        <statusBarWidgetFactory implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
+        <statusBarWidgetFactory id="HardReadWidget" implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
     </extensions>
 
     <projectListeners>
