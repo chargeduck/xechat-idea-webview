@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,6 @@ public class HardReadWidget implements StatusBarWidget.TextPresentation, StatusB
     private static final String ID = HardReadWidget.class.getName();
     private StatusBar myStatusBar;
     private String line = "";
-    private boolean isInstalled = false;
 
     public static HardReadWidget create() {
         return new HardReadWidget();
@@ -90,18 +88,4 @@ public class HardReadWidget implements StatusBarWidget.TextPresentation, StatusB
         return null;
     }
 
-    public void installToStatusBar() {
-        Project project = DataCache.project;
-        if (project == null || project.isDisposed() || isInstalled) {
-            return;
-        }
-        StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
-        if (statusBar == null) {
-            return;
-        }
-        statusBar.addWidget(this);
-        Disposer.register(project, this);
-        this.myStatusBar = statusBar;
-        this.isInstalled = true;
-    }
 }

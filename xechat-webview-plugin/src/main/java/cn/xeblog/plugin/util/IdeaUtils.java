@@ -1,8 +1,11 @@
 package cn.xeblog.plugin.util;
 
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.extensions.PluginId;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author anlingyi
@@ -10,11 +13,23 @@ import com.intellij.openapi.extensions.PluginId;
  */
 public class IdeaUtils {
 
-    private final static String ID = "cn.xeblog.xechat.plugin";
+    private static final Pattern VERSION_PATTERN = Pattern.compile("<version>(.*?)</version>");
 
     public static String getPluginVersion() {
-        IdeaPluginDescriptor pluginDescriptor = PluginManagerCore.getPlugin(PluginId.getId(ID));
-        return pluginDescriptor == null ? "???" : pluginDescriptor.getVersion();
+        try (InputStream is = IdeaUtils.class.getResourceAsStream("/META-INF/plugin.xml")) {
+            if (is == null) {
+                return "???";
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            Matcher matcher = VERSION_PATTERN.matcher(sb);
+            return matcher.find() ? matcher.group(1) : "???";
+        } catch (Exception e) {
+            return "???";
+        }
     }
-
 }
