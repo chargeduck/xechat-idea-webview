@@ -27,7 +27,7 @@ public class XEChatClient {
             connectionAction.setPort(PORT);
         }
 
-        EventLoopGroup group = new NioEventLoopGroup();
+        EventLoopGroup group = new NioEventLoopGroup(0);
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
