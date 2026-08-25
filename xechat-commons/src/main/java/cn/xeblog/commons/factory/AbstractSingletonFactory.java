@@ -47,7 +47,7 @@ public abstract class AbstractSingletonFactory<K, V> {
 
         public void add(K key, Class<? extends V> clazz) {
             try {
-                addInstance(key, clazz.newInstance());
+                addInstance(key, clazz.getDeclaredConstructor().newInstance());
             } catch (Exception e) {
                 e.printStackTrace();
             }
