@@ -50,7 +50,7 @@ public class VideoPlayerPanel {
             if (mainPanel.isInitialized() && mainPanel.getJSBridge() != null) {
                 mainPanel.getJSBridge().pushMessage(
                         "JxBrowser License 未配置，无法使用视频功能。" +
-                        "请在 File > Settings > Tools > XEChat WebView > jxLicense 中填写。");
+                        "请在 File > Settings > Tools > xechat-webview > jxLicense 中填写。");
             }
             open = false;
             return;

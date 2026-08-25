@@ -1,35 +1,40 @@
 package cn.xeblog.plugin.webview.bridge;
 
-import cn.xeblog.plugin.action.*;
-import cn.xeblog.plugin.cache.DataCache;
-import cn.xeblog.plugin.enums.Command;
-import cn.xeblog.plugin.persistence.PersistenceData;
-import cn.xeblog.plugin.persistence.PersistenceService;
-import cn.xeblog.plugin.tools.Tools;
-import cn.xeblog.commons.enums.Action;
 import cn.xeblog.commons.entity.OnlineServer;
 import cn.xeblog.commons.entity.game.GameRoomMsgDTO;
-import cn.xeblog.plugin.webview.WebViewPanel;
+import cn.xeblog.commons.enums.Action;
+import cn.xeblog.plugin.action.*;
+import cn.xeblog.plugin.action.handler.message.UserMessageHandler;
+import cn.xeblog.plugin.cache.DataCache;
+import cn.xeblog.plugin.enums.Command;
+import cn.xeblog.plugin.persistence.PersistenceService;
+import cn.xeblog.plugin.tools.Tools;
 import cn.xeblog.plugin.webview.VideoPlayerPanel;
+import cn.xeblog.plugin.webview.WebViewPanel;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.browser.CefMessageRouter;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -215,6 +220,7 @@ public class JSBridge {
                 _x.roomInvite=function(u){_call('roomInvite',[u]);};
                 _x.roomLeave=function(){_call('roomLeave');};
                 _x.openBrowser=function(u){_call('openBrowser',[u]);};
+                _x.downloadImage=function(f){_call('downloadImage',[f]);};
                 _x.getReadConfig=function(){return JSON.stringify(__readConfig);};
                 _x.setReadConfig=function(c){_call('setReadConfig',[c]);};
                 _x.ready=function(){_call('ready');};
@@ -303,6 +309,9 @@ public class JSBridge {
                 break;
             case "execCommand":
                 if (!args.isEmpty()) Command.handle(args.get(0));
+                break;
+            case "downloadImage":
+                if (!args.isEmpty()) UserMessageHandler.downloadImage(args.get(0));
                 break;
             case "openTool":
                 if (!args.isEmpty()) openToolInternal(Integer.parseInt(args.get(0)));
