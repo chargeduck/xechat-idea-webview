@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xechat</title>
+    <script>
+        // 防主题闪烁：加载前按存储值预置 html class（dark=深色 / light=亮色，默认深色）
+        (function () {
+            try {
+                var t = localStorage.getItem('xechat-theme');
+                document.documentElement.className = t === 'light' ? 'light' : 'dark';
+            } catch (e) {
+                document.documentElement.className = 'dark';
+            }
+        })();
+    </script>
     <style>
         body { margin:0; overflow:hidden; background:#1e1e1e; color:#ccc; font-family:sans-serif; }
         #error-box { display:none; padding:20px; color:#f56c6c; white-space:pre-wrap; font-size:13px; }
@@ -75,7 +86,8 @@
             }
         };
         window.xechat = _x;
-    </script>
+    </script>
+
 
   <script>
 var __defProp = Object.defineProperty;
@@ -264,26 +276,26 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--accent-color);
 }\r
 
-.chat-panel[data-v-9589a5c3] {
+.chat-panel[data-v-92016cee] {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 /* ===== 消息列表 ===== */
-.message-list[data-v-9589a5c3] {
+.message-list[data-v-92016cee] {
   flex: 1;
   overflow-y: scroll;
   padding: 12px 16px;
   contain: layout style;
 }
-.message-item[data-v-9589a5c3] {
+.message-item[data-v-92016cee] {
   padding: 4px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
 /* ===== 系统消息：VitePress 风格彩色容器块 ===== */
-.system-msg-box[data-v-9589a5c3] {
+.system-msg-box[data-v-92016cee] {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -294,59 +306,59 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   font-size: 12px;
   line-height: 1.5;
 }
-.system-msg-box .system-msg-icon[data-v-9589a5c3] {
+.system-msg-box .system-msg-icon[data-v-92016cee] {
   flex-shrink: 0;
   font-size: 13px;
   margin-top: 2px;
 }
-.system-msg-box .system-msg-body[data-v-9589a5c3] {
+.system-msg-box .system-msg-body[data-v-92016cee] {
   flex: 1;
   min-width: 0;
 }
-.system-msg-box .system-msg-title[data-v-9589a5c3] {
+.system-msg-box .system-msg-title[data-v-92016cee] {
   font-weight: 600;
   margin-bottom: 2px;
   font-size: 12px;
 }
-.system-msg-box .system-msg-text[data-v-9589a5c3] {
+.system-msg-box .system-msg-text[data-v-92016cee] {
   word-break: break-word;
 }
-.system-msg-box.error[data-v-9589a5c3] {
+.system-msg-box.error[data-v-92016cee] {
   border-color: var(--danger-color);
   background: rgba(244, 71, 71, 0.08);
 }
-.system-msg-box.error .system-msg-icon[data-v-9589a5c3] { color: var(--danger-color);
+.system-msg-box.error .system-msg-icon[data-v-92016cee] { color: var(--danger-color);
 }
-.system-msg-box.error .system-msg-title[data-v-9589a5c3] { color: var(--danger-color);
+.system-msg-box.error .system-msg-title[data-v-92016cee] { color: var(--danger-color);
 }
-.system-msg-box.notice[data-v-9589a5c3] {
+.system-msg-box.notice[data-v-92016cee] {
   border-color: var(--success-color);
   background: rgba(78, 201, 176, 0.08);
 }
-.system-msg-box.notice .system-msg-icon[data-v-9589a5c3] { color: var(--success-color);
+.system-msg-box.notice .system-msg-icon[data-v-92016cee] { color: var(--success-color);
 }
-.system-msg-box.notice .system-msg-title[data-v-9589a5c3] { color: var(--success-color);
+.system-msg-box.notice .system-msg-title[data-v-92016cee] { color: var(--success-color);
 }
-.system-msg-box.info[data-v-9589a5c3] {
+.system-msg-box.info[data-v-92016cee] {
   border-color: var(--accent-color);
   background: rgba(0, 122, 204, 0.08);
 }
-.system-msg-box.info .system-msg-icon[data-v-9589a5c3] { color: var(--accent-color);
+.system-msg-box.info .system-msg-icon[data-v-92016cee] { color: var(--accent-color);
 }
-.system-msg-box.info .system-msg-title[data-v-9589a5c3] { color: var(--accent-color);
+.system-msg-box.info .system-msg-title[data-v-92016cee] { color: var(--accent-color);
 }
 
 /* 浅色主题下系统消息背景微调 */
-:root.light .system-msg-box.error[data-v-9589a5c3]  { background: rgba(244, 71, 71, 0.06);
+:root.light .system-msg-box.error[data-v-92016cee]  { background: rgba(244, 71, 71, 0.06);
 }
-:root.light .system-msg-box.notice[data-v-9589a5c3] { background: rgba(78, 201, 176, 0.06);
+:root.light .system-msg-box.notice[data-v-92016cee] { background: rgba(78, 201, 176, 0.06);
 }
-:root.light .system-msg-box.info[data-v-9589a5c3]   { background: rgba(0, 120, 212, 0.06);
+:root.light .system-msg-box.info[data-v-92016cee]   { background: rgba(0, 120, 212, 0.06);
 }
-.message-item[data-v-9589a5c3]:last-child {
+.message-item[data-v-92016cee]:last-child {
   border-bottom: none;
 }
-.empty-hint[data-v-9589a5c3] {
+.empty-hint[data-v-92016cee] {
   color: var(--text-muted);
   text-align: center;
   padding: 40px 0;
@@ -354,67 +366,72 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
 }
 
 /* ===== 底部输入区域 ===== */
-.input-area[data-v-9589a5c3] {
+.input-area[data-v-92016cee] {
   position: relative;
   border-top: 1px solid var(--border-color);
   padding: 8px 12px;
   background: var(--bg-secondary);
 }
-.input-row[data-v-9589a5c3] {
+.input-row[data-v-92016cee] {
   display: flex;
   align-items: flex-start;
   gap: 6px;
 }
-.input-row .chat-input[data-v-9589a5c3] {
+.input-row .chat-input[data-v-92016cee] {
   flex: 1;
 }
 
 /* ===== @ 提及弹层 ===== */
-.cmd-panel[data-v-9589a5c3] {
+.cmd-panel[data-v-92016cee] {
   position: absolute;
   bottom: 56px;
   left: 12px;
+  right: 12px;
   z-index: 10;
-  width: 220px;
-  max-height: 180px;
+  max-height: 200px;
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #e4e7ed;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   padding: 4px 0;
   font-size: 13px;
 }
-.cmd-item[data-v-9589a5c3] {
+.cmd-item[data-v-92016cee] {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   padding: 6px 12px;
   cursor: pointer;
-  color: #606266;
+  color: var(--text-primary);
+  white-space: nowrap;
 }
-.cmd-item[data-v-9589a5c3]:hover,
-.cmd-item.active[data-v-9589a5c3] {
-  background: #ecf5ff;
+.cmd-item[data-v-92016cee]:hover,
+.cmd-item.active[data-v-92016cee] {
+  background: var(--bg-hover, rgba(128, 128, 128, 0.12));
 }
-.cmd-name[data-v-9589a5c3] {
-  color: #409eff;
+.cmd-name[data-v-92016cee] {
+  color: var(--accent-color);
   font-family: Consolas, Monaco, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.cmd-desc[data-v-9589a5c3] {
-  color: #909399;
+.cmd-desc[data-v-92016cee] {
+  color: var(--text-secondary);
   font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  flex: 1;
+  min-width: 0;
 }
-.cmd-empty[data-v-9589a5c3] {
+.cmd-empty[data-v-92016cee] {
   padding: 6px 12px;
-  color: #909399;
+  color: var(--text-secondary);
 }
-.at-panel[data-v-9589a5c3] {
+.at-panel[data-v-92016cee] {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -427,7 +444,7 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   z-index: 20;
 }
-.at-item[data-v-9589a5c3] {
+.at-item[data-v-92016cee] {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -436,23 +453,23 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--text-primary);
   cursor: pointer;
 }
-.at-item.active[data-v-9589a5c3],
-.at-item[data-v-9589a5c3]:hover {
+.at-item.active[data-v-92016cee],
+.at-item[data-v-92016cee]:hover {
   background: var(--bg-hover, rgba(128, 128, 128, 0.12));
 }
-.at-status[data-v-9589a5c3] {
+.at-status[data-v-92016cee] {
   font-size: 13px;
   width: 18px;
   text-align: center;
 }
-.at-name[data-v-9589a5c3] {
+.at-name[data-v-92016cee] {
   font-weight: 500;
 }
-.at-region[data-v-9589a5c3] {
+.at-region[data-v-92016cee] {
   color: var(--text-secondary);
   font-size: 12px;
 }
-.at-empty[data-v-9589a5c3] {
+.at-empty[data-v-92016cee] {
   padding: 12px;
   text-align: center;
   color: var(--text-secondary);
@@ -74034,28 +74051,6 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     else
       nextTick(fn2);
   }
-  function useToggle(initialValue = false, options = {}) {
-    const {
-      truthyValue = true,
-      falsyValue = false
-    } = options;
-    const valueIsRef = /* @__PURE__ */ isRef(initialValue);
-    const _value = /* @__PURE__ */ shallowRef(initialValue);
-    function toggle(value) {
-      if (arguments.length) {
-        _value.value = value;
-        return _value.value;
-      } else {
-        const truthy = toValue(truthyValue);
-        _value.value = _value.value === truthy ? toValue(falsyValue) : truthy;
-        return _value.value;
-      }
-    }
-    if (valueIsRef)
-      return toggle;
-    else
-      return [_value, toggle];
-  }
   function watchImmediate(source, cb, options) {
     return watch(
       source,
@@ -74479,11 +74474,14 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   const isDark = useDark({
     selector: "html",
     attribute: "class",
-    valueDark: "",
+    valueDark: "dark",
     valueLight: "light",
-    initialValue: "dark"
+    initialValue: "dark",
+    storageKey: "xechat-theme"
   });
-  const toggleTheme = useToggle(isDark);
+  function toggleTheme() {
+    isDark.value = !isDark.value;
+  }
   const SETTINGS_KEY = "xechat_settings_v1";
   function loadSettings() {
     try {
@@ -74499,9 +74497,9 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   }
   const DEFAULT_SHORTCUT_PLUS = { ctrl: true, alt: true, shift: false, key: "=" };
   const DEFAULT_SHORTCUT_MINUS = { ctrl: true, alt: true, shift: false, key: "-" };
-  const DEFAULT_SHORTCUT_THEME = { ctrl: true, alt: true, shift: false, key: "T" };
+  const DEFAULT_SHORTCUT_THEME = { ctrl: true, alt: true, shift: false, key: "L" };
   const DEFAULT_SHORTCUT_OPACITY_0 = { ctrl: true, alt: true, shift: false, key: "0" };
-  const DEFAULT_SHORTCUT_OPACITY_1 = { ctrl: true, alt: true, shift: false, key: "1" };
+  const DEFAULT_SHORTCUT_OPACITY_1 = { ctrl: true, alt: true, shift: false, key: "9" };
   const DEFAULT_SHORTCUT_PANIC = { ctrl: true, alt: true, shift: false, key: "P" };
   const defaults$1 = {
     transportMode: "auto",
@@ -74517,7 +74515,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     shortcutTheme: DEFAULT_SHORTCUT_THEME,
     /** 透明度 0% 快捷键：Ctrl+Alt+0 */
     shortcutOpacity0: DEFAULT_SHORTCUT_OPACITY_0,
-    /** 透明度 100% 快捷键：Ctrl+Alt+1 */
+    /** 透明度 100% 快捷键：Ctrl+Alt+9 */
     shortcutOpacity1: DEFAULT_SHORTCUT_OPACITY_1,
     /** 紧急模式快捷键：Ctrl+Alt+P */
     shortcutPanic: DEFAULT_SHORTCUT_PANIC,
@@ -74740,9 +74738,9 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
 |1 | \`ctrl alt -\`| 降低透明度 |
 |2 | \`ctrl alt =\`| 提高透明度（= 键） |
 |3 | \`ctrl alt 0\`| 全透明 |
-|4 | \`ctrl alt 1\`| 全不透明 |
-|5 | \`ctrl alt t\`| 切换主题 |
-|6 | \`ctrl alt p\`| 紧急模式（老板键）预设图片或网址一键覆盖摸鱼页面 |
+|4 | \`ctrl alt 9\`| 全不透明 |
+|5 | \`ctrl alt L\`| 切换主题 |
+|6 | \`ctrl alt P\`| 紧急模式（老板键）预设图片或网址一键覆盖摸鱼页面 |
 
 > *Tips*: 录制了自定义快捷键则优先使用，未录制使用上表默认键位；输入 \`#showKey\` 可查看当前生效键位。
 
@@ -82763,10 +82761,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   };
   const _hoisted_16$2 = ["onMousedown", "onMouseenter"];
   const _hoisted_17$2 = { class: "cmd-name" };
-  const _hoisted_18$2 = {
-    key: 0,
-    class: "cmd-desc"
-  };
+  const _hoisted_18$2 = { class: "cmd-desc" };
   const _hoisted_19$1 = { class: "input-row" };
   const _sfc_main$9 = {
     __name: "ChatPanel",
@@ -82930,14 +82925,15 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
       const cmdTokenStart = /* @__PURE__ */ ref(-1);
       const cmdList = computed(() => {
         const list2 = [];
-        const re2 = /\*\*#([a-zA-Z]+)[^*]*\*\*\s*\|\s*([^|]+)/g;
+        const re2 = /\*\*(#[^*]+)\*\*\s*\|\s*([^|]+)/g;
         let m2;
         const text2 = helpStore.helpText || "";
         while ((m2 = re2.exec(text2)) !== null) {
-          list2.push({ name: m2[1], desc: m2[2].trim() });
+          const full = m2[1].trim();
+          list2.push({ name: full.split(/\s+/)[0], full, desc: m2[2].trim() });
         }
-        if (!list2.some((c2) => c2.name === "loging")) {
-          list2.push({ name: "loging", desc: "快速登录（默认服务器0）" });
+        if (!list2.some((c2) => c2.name === "#loging")) {
+          list2.push({ name: "#loging", full: "#loging", desc: "快速登录（默认服务器0）" });
         }
         return list2;
       });
@@ -83008,6 +83004,9 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
           if (isAt) atActiveIndex.value = next;
           else cmdActiveIndex.value = next;
           scrollActiveItem();
+        } else if (e.key === "Tab" && cmdPanelVisible.value && cmdFilteredCommands.value.length === 1) {
+          e.preventDefault();
+          selectCmdCommand(cmdFilteredCommands.value[0]);
         } else if (e.key === "Escape") {
           e.preventDefault();
           atPanelVisible.value = false;
@@ -83049,7 +83048,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
         const pos = ta ? ta.selectionStart : text2.length;
         let end = pos;
         while (end < text2.length && text2[end] !== " " && text2[end] !== "\n" && text2[end] !== "	") end++;
-        const replacement = "#" + cmd.name + " ";
+        const replacement = cmd.full + " ";
         const newText = text2.slice(0, cmdTokenStart.value) + replacement + text2.slice(end);
         inputText.value = newText;
         cmdPanelVisible.value = false;
@@ -83228,8 +83227,8 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
                   onMousedown: withModifiers(($event) => selectCmdCommand(c2), ["prevent"]),
                   onMouseenter: ($event) => cmdActiveIndex.value = i
                 }, [
-                  createBaseVNode("span", _hoisted_17$2, "#" + toDisplayString(c2.name), 1),
-                  i === cmdActiveIndex.value ? (openBlock(), createElementBlock("span", _hoisted_18$2, toDisplayString(c2.desc), 1)) : createCommentVNode("", true)
+                  createBaseVNode("span", _hoisted_17$2, toDisplayString(c2.full), 1),
+                  createBaseVNode("span", _hoisted_18$2, toDisplayString(c2.desc), 1)
                 ], 42, _hoisted_16$2);
               }), 128))
             ])) : createCommentVNode("", true),
@@ -83258,7 +83257,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
       };
     }
   };
-  const ChatPanel = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-9589a5c3"]]);
+  const ChatPanel = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-92016cee"]]);
   const _hoisted_1$8 = { class: "tool-panel" };
   const _hoisted_2$8 = { class: "tool-grid" };
   const _hoisted_3$8 = ["onClick"];
