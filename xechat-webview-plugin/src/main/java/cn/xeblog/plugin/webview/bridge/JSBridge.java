@@ -9,7 +9,7 @@ import cn.xeblog.plugin.cache.DataCache;
 import cn.xeblog.plugin.enums.Command;
 import cn.xeblog.plugin.persistence.PersistenceService;
 import cn.xeblog.plugin.tools.Tools;
-import cn.xeblog.plugin.webview.VideoPlayerPanel;
+import cn.xeblog.plugin.tools.browser2.Const;
 import cn.xeblog.plugin.webview.WebViewPanel;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -23,6 +23,8 @@ import org.cef.browser.CefMessageRouter;
 import org.cef.callback.CefQueryCallback;
 import org.cef.handler.CefMessageRouterHandlerAdapter;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -141,7 +143,7 @@ public class JSBridge {
 
     /**
      * 构建注入到页面的 JS 代码。
-     * window.xechat API 保持与旧 JxBrowser @JsAccessible 版本完全一致。
+     * window.xechat API 供前端 JSBridge 调用。
      */
     private String buildInjectionJS() {
         // 安全转义的 JSON 数据
@@ -431,7 +433,7 @@ public class JSBridge {
     // ==================== 内部实现 ====================
 
     /**
-     * 打开工具。index=2（BROWSER2）需走 JxBrowser 视频播放通道。
+     * 打开工具。BROWSER2（index=2）使用本机浏览器 --app 方式打开。
      */
     private void openToolInternal(int index) {
         var tool = Tools.getTool(index);
@@ -444,14 +446,47 @@ public class JSBridge {
             return;
         }
 
-        // BROWSER2（index=2）使用 JxBrowser 独立面板（支持 H.264 视频解码）
+        // BROWSER2：使用本机浏览器 --app 方式打开，交由浏览器工具处理
         if (tool == Tools.BROWSER2) {
-            VideoPlayerPanel.getInstance().open();
+            openToolInNativeBrowser(tool);
             return;
         }
 
         ToolAction.create(tool);
         pushEvent("toolOpen", Map.of("index", index, "name", tool.getName()));
+    }
+
+    /**
+     * 使用本机浏览器 --app 方式打开 BROWSER2 工具。
+     * 优先使用本机 Chrome/Edge 的 --app 独立窗口模式，找不到时回退系统默认浏览器。
+     */
+    private void openToolInNativeBrowser(Tools tool) {
+        try {
+            String url = Const.DEFAULT_INDEX;
+            String browserPath = null;
+            String[] candidates = {
+                    System.getenv("ProgramFiles") + "\\Google\\Chrome\\Application\\chrome.exe",
+                    System.getenv("ProgramFiles(x86)") + "\\Google\\Chrome\\Application\\chrome.exe",
+                    System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\Application\\chrome.exe",
+                    System.getenv("ProgramFiles") + "\\Microsoft\\Edge\\Application\\msedge.exe",
+                    System.getenv("ProgramFiles(x86)") + "\\Microsoft\\Edge\\Application\\msedge.exe"
+            };
+            for (String c : candidates) {
+                if (c != null && new File(c).exists()) {
+                    browserPath = c;
+                    break;
+                }
+            }
+            if (browserPath != null) {
+                new ProcessBuilder(browserPath, "--app=" + url).start();
+            } else {
+                Desktop.getDesktop().browse(new URI(url));
+            }
+            pushEvent("toolOpen", Map.of("index", 2, "name", tool.getName()));
+        } catch (Exception e) {
+            log.error("打开本机浏览器失败", e);
+            pushMessage("打开浏览器失败: " + e.getMessage());
+        }
     }
 
     private void joinGameInternal(int gameIndex) {
@@ -469,9 +504,6 @@ public class JSBridge {
             case "username":
                 data.setUsername(value);
                 DataCache.username = value;
-                break;
-            case "jxBrowserLicense":
-                data.setJxBrowserLicense(value);
                 break;
             case "msgNotify":
                 data.setMsgNotify(Integer.parseInt(value));
