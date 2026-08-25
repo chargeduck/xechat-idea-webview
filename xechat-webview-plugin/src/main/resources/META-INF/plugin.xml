@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>cn.xeblog.xechat.webview.plugin</id>
-    <name>XEChat WebView</name>
-    <vendor email="1090172196@qq.com" url="https://xeblog.cn">AnLingYi</vendor>
+    <name>xechat-webview</name>
+    <vendor email="2496290990@qq.com" url="https://xeblog.cn">Chargeduck</vendor>
 
     <description>
         <![CDATA[
@@ -30,10 +30,9 @@
                     canCloseContents="true"
                     factoryClass="cn.xeblog.plugin.factory.MainWindowFactory" icon="/images/logo.svg"/>
         <notificationGroup id="cn.xeblog.xechat.webview.notify"
-                           displayType="BALLOON"
-                           key="xechat-webview"/>
+                           displayType="BALLOON"/>
         <applicationConfigurable parentId="tools" instance="cn.xeblog.plugin.setting.PluginConfigSetting"
-                                 id="cn.xeblog.xechat.webview.setting" displayName="XEChat WebView"/>
+                                 id="cn.xeblog.xechat.webview.setting" displayName="xechat-webview"/>
         <statusBarWidgetFactory id="HardReadWidget" implementation="cn.xeblog.plugin.factory.HardReadWidgetFactory"/>
     </extensions>
 
