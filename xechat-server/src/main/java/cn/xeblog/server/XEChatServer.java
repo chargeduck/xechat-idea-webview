@@ -9,6 +9,8 @@ import cn.xeblog.server.handler.HttpAndWebSocketChannelInitializer;
 import cn.xeblog.server.service.IpRegionService;
 import cn.xeblog.server.service.impl.HeFengWeatherConfigServiceImpl;
 import cn.xeblog.server.service.impl.Ip2RegionServiceImpl;
+import cn.xeblog.server.forward.client.ForwardClient;
+import cn.xeblog.server.forward.utils.XeServerUtils;
 import cn.xeblog.server.util.BaiDuFyUtil;
 import cn.xeblog.server.util.ConfigUtil;
 import cn.xeblog.server.util.IpUtil;
@@ -146,6 +148,37 @@ public class XEChatServer {
 
         var server = new XEChatServer(serverConfig.getPort());
         server.enableWS = serverConfig.getEnableWS();
+
+        // 启动与 hub(lobby) 的转发连接（含断线自动重连）
+        server.startForwardConnect();
+
         server.run();
+    }
+
+    /**
+     * 启动与 hub(lobby) 的转发连接：每 5s 检查一次 channel，未建立或已断开时自动重建；
+     * 连续失败达到上限（ForwardClient.MAX_ATTEMPTS）后线程退出，不再轮询阻塞主进程。
+     */
+    private void startForwardConnect() {
+        if (StrUtil.isBlank(ServerConfig.getConfig().getForwardHost())) {
+            return;
+        }
+        // 后台预热：按公网 IP 比对管理后台列表，探测本服务接入名（不阻塞连接）
+        XeServerUtils.refreshDetectAsync();
+        Thread forwardConnectThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted() && !ForwardClient.hasGivenUp()) {
+                try {
+                    ForwardClient.channel();
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (ForwardClient.hasGivenUp()) {
+                log.warn("forward 注册已连续失败 {} 次，停止自动重连（可执行 forward 管理员命令重新注册）", ForwardClient.MAX_ATTEMPTS);
+            }
+        }, "forward-client-reconnect");
+        forwardConnectThread.setDaemon(true);
+        forwardConnectThread.start();
     }
 }

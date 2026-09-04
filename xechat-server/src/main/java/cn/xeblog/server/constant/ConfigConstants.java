@@ -97,4 +97,11 @@ public interface ConfigConstants {
 
     // endregion
 
+    // region ============================== 转发(hub) 配置 ==============================
+    String FORWARD = "FORWARD";
+    String FORWARD_HOST = "host";
+    String FORWARD_PORT = "port";
+    String FORWARD_SERVER_NAME = "serverName";
+    // endregion
+
 }

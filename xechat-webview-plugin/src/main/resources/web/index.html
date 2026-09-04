@@ -275,26 +275,52 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--accent-color);
 }
 
-.chat-panel[data-v-92016cee] {
+.chat-panel[data-v-f34a15b6] {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* ===== 消息列表 ===== */
-.message-list[data-v-92016cee] {
+.message-list[data-v-f34a15b6] {
   flex: 1;
   overflow-y: scroll;
   padding: 12px 16px;
   contain: layout style;
 }
-.message-item[data-v-92016cee] {
+
+/* ===== 右下角悬浮按钮组 ===== */
+.scroll-float[data-v-f34a15b6] {
+  position: absolute;
+  right: 14px;
+  bottom: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 15;
+}
+.float-btn[data-v-f34a15b6] {
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  opacity: 0.92;
+  transition: opacity 0.2s, border-color 0.2s, color 0.2s;
+}
+.float-btn[data-v-f34a15b6]:hover {
+  opacity: 1;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: var(--bg-primary);
+}
+.message-item[data-v-f34a15b6] {
   padding: 4px 0;
   border-bottom: 1px solid var(--border-color);
 }
 
 /* ===== 系统消息：VitePress 风格彩色容器块 ===== */
-.system-msg-box[data-v-92016cee] {
+.system-msg-box[data-v-f34a15b6] {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -305,59 +331,59 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   font-size: 12px;
   line-height: 1.5;
 }
-.system-msg-box .system-msg-icon[data-v-92016cee] {
+.system-msg-box .system-msg-icon[data-v-f34a15b6] {
   flex-shrink: 0;
   font-size: 13px;
   margin-top: 2px;
 }
-.system-msg-box .system-msg-body[data-v-92016cee] {
+.system-msg-box .system-msg-body[data-v-f34a15b6] {
   flex: 1;
   min-width: 0;
 }
-.system-msg-box .system-msg-title[data-v-92016cee] {
+.system-msg-box .system-msg-title[data-v-f34a15b6] {
   font-weight: 600;
   margin-bottom: 2px;
   font-size: 12px;
 }
-.system-msg-box .system-msg-text[data-v-92016cee] {
+.system-msg-box .system-msg-text[data-v-f34a15b6] {
   word-break: break-word;
 }
-.system-msg-box.error[data-v-92016cee] {
+.system-msg-box.error[data-v-f34a15b6] {
   border-color: var(--danger-color);
   background: rgba(244, 71, 71, 0.08);
 }
-.system-msg-box.error .system-msg-icon[data-v-92016cee] { color: var(--danger-color);
+.system-msg-box.error .system-msg-icon[data-v-f34a15b6] { color: var(--danger-color);
 }
-.system-msg-box.error .system-msg-title[data-v-92016cee] { color: var(--danger-color);
+.system-msg-box.error .system-msg-title[data-v-f34a15b6] { color: var(--danger-color);
 }
-.system-msg-box.notice[data-v-92016cee] {
+.system-msg-box.notice[data-v-f34a15b6] {
   border-color: var(--success-color);
   background: rgba(78, 201, 176, 0.08);
 }
-.system-msg-box.notice .system-msg-icon[data-v-92016cee] { color: var(--success-color);
+.system-msg-box.notice .system-msg-icon[data-v-f34a15b6] { color: var(--success-color);
 }
-.system-msg-box.notice .system-msg-title[data-v-92016cee] { color: var(--success-color);
+.system-msg-box.notice .system-msg-title[data-v-f34a15b6] { color: var(--success-color);
 }
-.system-msg-box.info[data-v-92016cee] {
+.system-msg-box.info[data-v-f34a15b6] {
   border-color: var(--accent-color);
   background: rgba(0, 122, 204, 0.08);
 }
-.system-msg-box.info .system-msg-icon[data-v-92016cee] { color: var(--accent-color);
+.system-msg-box.info .system-msg-icon[data-v-f34a15b6] { color: var(--accent-color);
 }
-.system-msg-box.info .system-msg-title[data-v-92016cee] { color: var(--accent-color);
+.system-msg-box.info .system-msg-title[data-v-f34a15b6] { color: var(--accent-color);
 }
 
 /* 浅色主题下系统消息背景微调 */
-:root.light .system-msg-box.error[data-v-92016cee]  { background: rgba(244, 71, 71, 0.06);
+:root.light .system-msg-box.error[data-v-f34a15b6]  { background: rgba(244, 71, 71, 0.06);
 }
-:root.light .system-msg-box.notice[data-v-92016cee] { background: rgba(78, 201, 176, 0.06);
+:root.light .system-msg-box.notice[data-v-f34a15b6] { background: rgba(78, 201, 176, 0.06);
 }
-:root.light .system-msg-box.info[data-v-92016cee]   { background: rgba(0, 120, 212, 0.06);
+:root.light .system-msg-box.info[data-v-f34a15b6]   { background: rgba(0, 120, 212, 0.06);
 }
-.message-item[data-v-92016cee]:last-child {
+.message-item[data-v-f34a15b6]:last-child {
   border-bottom: none;
 }
-.empty-hint[data-v-92016cee] {
+.empty-hint[data-v-f34a15b6] {
   color: var(--text-muted);
   text-align: center;
   padding: 40px 0;
@@ -365,23 +391,23 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
 }
 
 /* ===== 底部输入区域 ===== */
-.input-area[data-v-92016cee] {
+.input-area[data-v-f34a15b6] {
   position: relative;
   border-top: 1px solid var(--border-color);
   padding: 8px 12px;
   background: var(--bg-secondary);
 }
-.input-row[data-v-92016cee] {
+.input-row[data-v-f34a15b6] {
   display: flex;
   align-items: flex-start;
   gap: 6px;
 }
-.input-row .chat-input[data-v-92016cee] {
+.input-row .chat-input[data-v-f34a15b6] {
   flex: 1;
 }
 
 /* ===== @ 提及弹层 ===== */
-.cmd-panel[data-v-92016cee] {
+.cmd-panel[data-v-f34a15b6] {
   position: absolute;
   bottom: 56px;
   left: 12px;
@@ -396,7 +422,7 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   padding: 4px 0;
   font-size: 13px;
 }
-.cmd-item[data-v-92016cee] {
+.cmd-item[data-v-f34a15b6] {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -406,18 +432,18 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--text-primary);
   white-space: nowrap;
 }
-.cmd-item[data-v-92016cee]:hover,
-.cmd-item.active[data-v-92016cee] {
+.cmd-item[data-v-f34a15b6]:hover,
+.cmd-item.active[data-v-f34a15b6] {
   background: var(--bg-hover, rgba(128, 128, 128, 0.12));
 }
-.cmd-name[data-v-92016cee] {
+.cmd-name[data-v-f34a15b6] {
   color: var(--accent-color);
   font-family: Consolas, Monaco, monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.cmd-desc[data-v-92016cee] {
+.cmd-desc[data-v-f34a15b6] {
   color: var(--text-secondary);
   font-size: 12px;
   white-space: nowrap;
@@ -426,11 +452,11 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   flex: 1;
   min-width: 0;
 }
-.cmd-empty[data-v-92016cee] {
+.cmd-empty[data-v-f34a15b6] {
   padding: 6px 12px;
   color: var(--text-secondary);
 }
-.at-panel[data-v-92016cee] {
+.at-panel[data-v-f34a15b6] {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -443,7 +469,7 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   z-index: 20;
 }
-.at-item[data-v-92016cee] {
+.at-item[data-v-f34a15b6] {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -452,23 +478,23 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--text-primary);
   cursor: pointer;
 }
-.at-item.active[data-v-92016cee],
-.at-item[data-v-92016cee]:hover {
+.at-item.active[data-v-f34a15b6],
+.at-item[data-v-f34a15b6]:hover {
   background: var(--bg-hover, rgba(128, 128, 128, 0.12));
 }
-.at-status[data-v-92016cee] {
+.at-status[data-v-f34a15b6] {
   font-size: 13px;
   width: 18px;
   text-align: center;
 }
-.at-name[data-v-92016cee] {
+.at-name[data-v-f34a15b6] {
   font-weight: 500;
 }
-.at-region[data-v-92016cee] {
+.at-region[data-v-f34a15b6] {
   color: var(--text-secondary);
   font-size: 12px;
 }
-.at-empty[data-v-92016cee] {
+.at-empty[data-v-f34a15b6] {
   padding: 12px;
   text-align: center;
   color: var(--text-secondary);
@@ -47238,7 +47264,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   const _hoisted_17$3 = ["fill"];
   const _hoisted_18$3 = ["fill"];
   const _hoisted_19$2 = ["fill"];
-  const _hoisted_20$1 = { transform: "translate(53.000000, 45.000000)" };
+  const _hoisted_20$2 = { transform: "translate(53.000000, 45.000000)" };
   const _hoisted_21 = ["fill", "xlink:href"];
   const _hoisted_22 = ["fill", "mask"];
   const _hoisted_23 = ["fill"];
@@ -47324,7 +47350,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
             width: "40",
             height: "36"
           }, null, 8, _hoisted_19$2),
-          createBaseVNode("g", _hoisted_20$1, [createBaseVNode("use", {
+          createBaseVNode("g", _hoisted_20$2, [createBaseVNode("use", {
             fill: `var(${unref(ns).cssVarBlockName("fill-color-8")})`,
             transform: "translate(8.500000, 18.000000) scale(-1, 1) translate(-8.500000, -18.000000) ",
             "xlink:href": `#path-3-${unref(id)}`
@@ -73164,8 +73190,8 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
             if (!self2._intentionalClose) self2._scheduleReconnect();
           };
           ws.onerror = function(err) {
-            console.error("[WS][loginToServer] onerror 触发, url=" + url, err && err.message ? err.message : err);
-            reject(err);
+            console.warn("[WS][loginToServer] onerror 触发, url=" + url + "，交由重连机制处理", err && err.message ? err.message : err);
+            resolve2();
           };
         });
       });
@@ -73527,6 +73553,22 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   function on(type, handler) {
     transport.on(type, handler);
   }
+  function cleanShortRegion(region) {
+    if (typeof region !== "string") return "";
+    return region.split("->").map((s2) => (s2 || "").trim()).filter((s2) => s2 && s2.toLowerCase() !== "null").join(" -> ");
+  }
+  function stripSystemNullTag(text2) {
+    if (typeof text2 !== "string") return text2 || "";
+    return text2.replace(/[\[【]([^\]】]*)[\]】]/g, (whole, inner) => {
+      if (inner == null || inner.trim() === "") return whole;
+      const cleaned = cleanShortRegion(inner);
+      if (!cleaned) return "";
+      if (/\bnull\b/i.test(inner)) {
+        return "[" + cleaned + "]";
+      }
+      return whole;
+    });
+  }
   const useOnlineUsersStore = /* @__PURE__ */ defineStore("onlineUsers", {
     state: () => ({
       users: [],
@@ -73545,7 +73587,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
           username: u2.username || "",
           status: u2.status || "",
           platform: u2.platform || "",
-          shortRegion: u2.shortRegion || ""
+          shortRegion: cleanShortRegion(u2.shortRegion)
         }));
       },
       /** 添加或更新一个用户（USER_STATE） */
@@ -73556,7 +73598,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
           username: user.username,
           status: user.status || "",
           platform: user.platform || "",
-          shortRegion: user.shortRegion || ""
+          shortRegion: cleanShortRegion(user.shortRegion)
         };
         const idx = this.users.findIndex((u2) => u2.username === entry.username);
         if (idx >= 0) {
@@ -73612,7 +73654,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   }
   function _formatUserMessageHead(data) {
     const time = data.time || "";
-    const region = data.user && data.user.shortRegion || "";
+    const region = cleanShortRegion(data.user && data.user.shortRegion);
     const username = data.user && data.user.username || "";
     const status = data.user && data.user.status ? _statusText(data.user.status) : "";
     const platform2 = data.user && data.user.platform ? _platformIcon(data.user.platform) : "";
@@ -73689,7 +73731,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     const merged = _mergeConsoleMessages(msgs);
     const parsed = merged.map(function(m2) {
       const isSystem = _isConsoleSystemMsg(m2);
-      const text2 = isSystem ? m2.replace(/^SYSTEM_MSG::/, "") : m2;
+      const text2 = isSystem ? stripSystemNullTag(m2.replace(/^SYSTEM_MSG::/, "")) : m2;
       const msg = { text: text2, type: isSystem ? "system" : void 0 };
       const mdImageUrl = isSystem ? "" : _extractMdImageUrl(text2);
       if (mdImageUrl) {
@@ -73756,7 +73798,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     const isImage = data.msgType && String(data.msgType).toUpperCase() === "IMAGE";
     const text2 = data.text || "";
     const mdImageUrl = !isSystem && !isImage ? _extractMdImageUrl(text2) : "";
-    const displayText = isSystem ? text2 : _formatUserMessageHead(data) + (isImage || mdImageUrl ? "" : text2);
+    const displayText = isSystem ? stripSystemNullTag(text2) : _formatUserMessageHead(data) + (isImage || mdImageUrl ? "" : text2);
     const displayType = isSystem ? "system" : void 0;
     let extra = null;
     if (isImage) {
@@ -73786,7 +73828,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     for (let i = 0; i < msgList.length; i++) {
       const item = msgList[i];
       if (item.type === "SYSTEM") {
-        parsed.push({ text: item.body || "", type: "system" });
+        parsed.push({ text: stripSystemNullTag(item.body || ""), type: "system" });
       } else if (item.type === "USER") {
         const head = _formatUserMessageHead({
           time: item.time,
@@ -82886,34 +82928,35 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     key: 0,
     class: "empty-hint"
   };
-  const _hoisted_7$8 = { class: "input-area" };
-  const _hoisted_8$7 = {
+  const _hoisted_7$8 = { class: "scroll-float" };
+  const _hoisted_8$7 = { class: "input-area" };
+  const _hoisted_9$5 = {
     key: 0,
     class: "at-panel"
   };
-  const _hoisted_9$5 = {
+  const _hoisted_10$4 = {
     key: 0,
     class: "at-empty"
   };
-  const _hoisted_10$4 = ["onMousedown", "onMouseenter"];
-  const _hoisted_11$4 = { class: "at-status" };
-  const _hoisted_12$2 = { class: "at-name" };
-  const _hoisted_13$2 = {
+  const _hoisted_11$4 = ["onMousedown", "onMouseenter"];
+  const _hoisted_12$2 = { class: "at-status" };
+  const _hoisted_13$2 = { class: "at-name" };
+  const _hoisted_14$2 = {
     key: 0,
     class: "at-region"
   };
-  const _hoisted_14$2 = {
+  const _hoisted_15$2 = {
     key: 1,
     class: "cmd-panel"
   };
-  const _hoisted_15$2 = {
+  const _hoisted_16$2 = {
     key: 0,
     class: "cmd-empty"
   };
-  const _hoisted_16$2 = ["onMousedown", "onMouseenter"];
-  const _hoisted_17$2 = { class: "cmd-name" };
-  const _hoisted_18$2 = { class: "cmd-desc" };
-  const _hoisted_19$1 = { class: "input-row" };
+  const _hoisted_17$2 = ["onMousedown", "onMouseenter"];
+  const _hoisted_18$2 = { class: "cmd-name" };
+  const _hoisted_19$1 = { class: "cmd-desc" };
+  const _hoisted_20$1 = { class: "input-row" };
   const _sfc_main$9 = {
     __name: "ChatPanel",
     setup(__props) {
@@ -82927,6 +82970,25 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
       const messageListRef = /* @__PURE__ */ ref(null);
       const inputRef = /* @__PURE__ */ ref(null);
       const inputText = /* @__PURE__ */ ref("");
+      const showTopBtn = /* @__PURE__ */ ref(false);
+      const showBottomBtn = /* @__PURE__ */ ref(false);
+      function onMessageScroll() {
+        const el = messageListRef.value;
+        if (!el) return;
+        showTopBtn.value = el.scrollTop > 200;
+        showBottomBtn.value = el.scrollTop < el.scrollHeight - el.clientHeight - 200;
+      }
+      function scrollToTop() {
+        const el = messageListRef.value;
+        if (el) el.scrollTop = 0;
+      }
+      function scrollToBottom() {
+        const el = messageListRef.value;
+        if (!el) return;
+        requestAnimationFrame(() => {
+          el.scrollTop = el.scrollHeight;
+        });
+      }
       watch(() => chatStore.messages.length, (newLen, oldLen) => {
         console.log("[ChatPanel] messages.length 变化: " + oldLen + " -> " + newLen);
         nextTick(() => {
@@ -83031,10 +83093,6 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
           if (sIdx >= 0 && !hasExplicitHostPort) {
             if (!srv) {
               chatStore.addMessage("无效的服务器编号: " + sIdx + "，有效范围 0~" + (serverStore.servers.length - 1));
-              return;
-            }
-            if (srv.wsAlive === false) {
-              chatStore.addMessage("服务器 " + (srv.name || srv.ip) + " 不支持 WebSocket，请使用 IDEA 插件登录");
               return;
             }
           }
@@ -83319,15 +83377,30 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
         if (chatStore.isEmpty) {
           chatStore.addMessage(helpStore.helpText);
         }
+        nextTick(() => {
+          requestAnimationFrame(() => {
+            const el = messageListRef.value;
+            if (el) {
+              el.scrollTop = el.scrollHeight;
+              showTopBtn.value = false;
+              showBottomBtn.value = false;
+            }
+          });
+        });
         (_a2 = inputRef.value) == null ? void 0 : _a2.focus();
       });
       return (_ctx, _cache) => {
+        const _component_Top = resolveComponent("Top");
+        const _component_el_icon = resolveComponent("el-icon");
+        const _component_el_button = resolveComponent("el-button");
+        const _component_Bottom = resolveComponent("Bottom");
         const _component_el_input = resolveComponent("el-input");
         return openBlock(), createElementBlock("div", _hoisted_1$9, [
           createBaseVNode("div", {
             class: "message-list",
             ref_key: "messageListRef",
-            ref: messageListRef
+            ref: messageListRef,
+            onScroll: onMessageScroll
           }, [
             (openBlock(true), createElementBlock(Fragment, null, renderList(unref(chatStore).messages, (msg, idx) => {
               return openBlock(), createElementBlock("div", {
@@ -83352,10 +83425,48 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
               ]);
             }), 128)),
             unref(chatStore).isEmpty ? (openBlock(), createElementBlock("div", _hoisted_6$8, " 暂无消息 ")) : createCommentVNode("", true)
-          ], 512),
+          ], 544),
           createBaseVNode("div", _hoisted_7$8, [
-            atPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_8$7, [
-              atFilteredUsers.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_9$5, "无匹配用户")) : createCommentVNode("", true),
+            showTopBtn.value ? (openBlock(), createBlock(_component_el_button, {
+              key: 0,
+              class: "float-btn",
+              title: "回到顶部",
+              circle: "",
+              size: "small",
+              onClick: scrollToTop
+            }, {
+              default: withCtx(() => [
+                createVNode(_component_el_icon, { size: 14 }, {
+                  default: withCtx(() => [
+                    createVNode(_component_Top)
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })) : createCommentVNode("", true),
+            showBottomBtn.value ? (openBlock(), createBlock(_component_el_button, {
+              key: 1,
+              class: "float-btn",
+              title: "回到底部",
+              circle: "",
+              size: "small",
+              onClick: scrollToBottom
+            }, {
+              default: withCtx(() => [
+                createVNode(_component_el_icon, { size: 14 }, {
+                  default: withCtx(() => [
+                    createVNode(_component_Bottom)
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })) : createCommentVNode("", true)
+          ]),
+          createBaseVNode("div", _hoisted_8$7, [
+            atPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_9$5, [
+              atFilteredUsers.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_10$4, "无匹配用户")) : createCommentVNode("", true),
               (openBlock(true), createElementBlock(Fragment, null, renderList(atFilteredUsers.value, (u2, i) => {
                 return openBlock(), createElementBlock("div", {
                   key: u2.username,
@@ -83363,14 +83474,14 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
                   onMousedown: withModifiers(($event) => selectAtUser(u2), ["prevent"]),
                   onMouseenter: ($event) => atActiveIndex.value = i
                 }, [
-                  createBaseVNode("span", _hoisted_11$4, toDisplayString(atStatusIcon(u2.status)), 1),
-                  createBaseVNode("span", _hoisted_12$2, toDisplayString(u2.username), 1),
-                  u2.shortRegion ? (openBlock(), createElementBlock("span", _hoisted_13$2, "[" + toDisplayString(u2.shortRegion) + "]", 1)) : createCommentVNode("", true)
-                ], 42, _hoisted_10$4);
+                  createBaseVNode("span", _hoisted_12$2, toDisplayString(atStatusIcon(u2.status)), 1),
+                  createBaseVNode("span", _hoisted_13$2, toDisplayString(u2.username), 1),
+                  u2.shortRegion ? (openBlock(), createElementBlock("span", _hoisted_14$2, "[" + toDisplayString(u2.shortRegion) + "]", 1)) : createCommentVNode("", true)
+                ], 42, _hoisted_11$4);
               }), 128))
             ])) : createCommentVNode("", true),
-            cmdPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_14$2, [
-              cmdFilteredCommands.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_15$2, "无匹配命令")) : createCommentVNode("", true),
+            cmdPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_15$2, [
+              cmdFilteredCommands.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_16$2, "无匹配命令")) : createCommentVNode("", true),
               (openBlock(true), createElementBlock(Fragment, null, renderList(cmdFilteredCommands.value, (c2, i) => {
                 return openBlock(), createElementBlock("div", {
                   key: c2.name,
@@ -83378,12 +83489,12 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
                   onMousedown: withModifiers(($event) => selectCmdCommand(c2), ["prevent"]),
                   onMouseenter: ($event) => cmdActiveIndex.value = i
                 }, [
-                  createBaseVNode("span", _hoisted_17$2, toDisplayString(c2.full), 1),
-                  createBaseVNode("span", _hoisted_18$2, toDisplayString(c2.desc), 1)
-                ], 42, _hoisted_16$2);
+                  createBaseVNode("span", _hoisted_18$2, toDisplayString(c2.full), 1),
+                  createBaseVNode("span", _hoisted_19$1, toDisplayString(c2.desc), 1)
+                ], 42, _hoisted_17$2);
               }), 128))
             ])) : createCommentVNode("", true),
-            createBaseVNode("div", _hoisted_19$1, [
+            createBaseVNode("div", _hoisted_20$1, [
               createVNode(StyleSelector, { onSelect: onStyleSelect }),
               createVNode(_component_el_input, {
                 ref_key: "inputRef",
@@ -83408,7 +83519,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
       };
     }
   };
-  const ChatPanel = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-92016cee"]]);
+  const ChatPanel = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-f34a15b6"]]);
   const _hoisted_1$8 = { class: "tool-panel" };
   const _hoisted_2$8 = { class: "tool-grid" };
   const _hoisted_3$8 = ["onClick"];

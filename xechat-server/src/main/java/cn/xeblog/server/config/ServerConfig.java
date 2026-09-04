@@ -53,6 +53,27 @@ public class ServerConfig {
      */
     private String token;
 
+    /**
+     * 转发服务器（hub）host
+     */
+    private String forwardHost;
+
+    /**
+     * 转发服务器（hub）port
+     */
+    private Integer forwardPort;
+
+    /**
+     * 本服务器接入名（展示用，可为空由 hub 分配）
+     */
+    private String serverName;
+
+    /**
+     * 本服务公网 IP / 域名（可选，用于按公网 IP 比对 /api/server/list 探测接入名；
+     * 未配置时自动请求公网 IP 回显服务探测）
+     */
+    private String publicIp;
+
     private static ServerConfig serverConfig;
 
     public static ServerConfig getConfig() {
@@ -97,5 +118,21 @@ public class ServerConfig {
 
     public boolean getEnableWS() {
         return enableWS;
+    }
+
+    public String getForwardHost() {
+        return StrUtil.equals("${FORWARD_HOST}", forwardHost) ? null : forwardHost;
+    }
+
+    public Integer getForwardPort() {
+        return forwardPort;
+    }
+
+    public String getServerName() {
+        return StrUtil.equals("${SERVER_NAME}", serverName) ? null : serverName;
+    }
+
+    public String getPublicIp() {
+        return StrUtil.equals("${PUBLIC_IP}", publicIp) ? null : publicIp;
     }
 }

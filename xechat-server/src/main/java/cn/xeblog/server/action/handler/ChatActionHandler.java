@@ -14,6 +14,7 @@ import cn.xeblog.server.builder.ResponseBuilder;
 import cn.xeblog.server.config.GlobalConfig;
 import cn.xeblog.server.util.BaiDuFyUtil;
 import cn.xeblog.server.util.SensitiveWordUtils;
+import cn.xeblog.server.util.XssFilterUtil;
 
 /**
  * @author anlingyi
@@ -40,6 +41,8 @@ public class ChatActionHandler extends AbstractActionHandler<UserMsgDTO> {
                 return;
             }
 
+            // XSS 纵深防御：广播前净化用户消息，白名单保留基础标签与 <font color> 彩字
+            msg = XssFilterUtil.sanitize(msg);
             BaiDuFyUtil baiDuFyUtil = Singleton.get(BaiDuFyUtil.class.getName(), () -> new BaiDuFyUtil("", ""));
             body.setContent(baiDuFyUtil.translate(SensitiveWordUtils.loveChina(msg)));
         } else {

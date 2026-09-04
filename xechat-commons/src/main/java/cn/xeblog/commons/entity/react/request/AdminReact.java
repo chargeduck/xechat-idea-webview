@@ -77,7 +77,13 @@ public class AdminReact extends BaseReact {
         /**
          * 用户权限移除
          */
-        USER_PERMIT_REMOVE
+        USER_PERMIT_REMOVE,
+        /**
+         * 转发注册（forward）
+         * value 为空时使用 application.yml 的 forward.host/forward.port；
+         * 也可传 forward -h hub地址 -p hub端口 注册到指定 hub。
+         */
+        FORWARD
         ;
     }
 

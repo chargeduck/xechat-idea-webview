@@ -1,0 +1,43 @@
+# ========== xechat-server 配置 ==========
+# 加载优先级（由高到低）：
+#   1. 启动参数：-p -swfile -weather -fyAppId -fyAppKey -ipfile -token -enableWS -fh -fp -sn
+#   2. -path 显式指定的 yml 文件
+#   3. 启动工作目录下的 application.yml / application.yaml（外部配置优先）
+#   4. jar 内置的 application.yml（本文件，作为默认兜底）
+# 支持 ${环境变量} 占位符，未配置环境变量时该项视为未设置。
+
+server:
+  # 监听端口
+  port: 33858
+  # 是否开启 WS/HTTP 协议（占用 port + 1 端口）
+  enableWS: true
+
+sensitive-word:
+  # 敏感词库文件路径
+  file: /opt/apps/xechat-server/data/db/keywords.txt
+
+weather:
+  # 和风天气 key（缺省时读取 ${WEATHER_KEY} 环境变量）
+  # key:
+  projectId: 472GUCQDJD
+  tokenId: CEGW8WGKB3
+
+translation:
+  # 百度翻译 app id / app key（缺省时读取 ${BD_APP_ID} / ${BD_APP_KEY} 环境变量）
+  appId: ${BD_APP_ID}
+  appKey: ${BD_APP_KEY}
+
+ip-search:
+  # 离线 ip 查询库地址
+  ip2Region_path: /opt/apps/xechat-server/data/db/ip2region.xdb
+
+admin:
+  # 管理员令牌
+  token: LeftWing.8-
+
+forward:
+  # hub(lobby) 地址；host 留空则本服务不启用跨塘转发
+  host: localhost
+  port: 9527
+  # 本服务接入名（展示用，留空时由 hub 按接入顺序分配“x号鱼塘”）
+  serverName: 测试1号

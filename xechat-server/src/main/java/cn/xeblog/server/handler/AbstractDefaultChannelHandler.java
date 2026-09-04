@@ -1,6 +1,11 @@
 package cn.xeblog.server.handler;
 
+import cn.xeblog.commons.entity.User;
+import cn.xeblog.server.forward.utils.MessageBuilder;
+import cn.xeblog.server.forward.utils.XeServerUtils;
 import cn.xeblog.server.action.ChannelAction;
+import cn.xeblog.server.forward.client.ForwardClient;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
@@ -26,7 +31,14 @@ public abstract class AbstractDefaultChannelHandler<T> extends SimpleChannelInbo
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         String id = ChannelAction.getId(ctx);
         log.debug("客户端离线，id -> {}", id);
-        ChannelAction.cleanUser(id);
+        User user = ChannelAction.cleanUser(id);
+        // 用户离线，上报 hub 通知其他鱼塘
+        if (user != null) {
+            Channel forwardChannel = ForwardClient.channel();
+            if (forwardChannel != null) {
+                forwardChannel.writeAndFlush(MessageBuilder.userOfflineMessage(XeServerUtils.getDisplayServerName(), user.getUsername()));
+            }
+        }
     }
 
     @Override
