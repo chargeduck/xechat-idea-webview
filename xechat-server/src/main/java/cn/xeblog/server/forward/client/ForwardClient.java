@@ -19,21 +19,40 @@ import lombok.extern.slf4j.Slf4j;
  * 相对老 xe-forwarding-server 的增强：
  * 1. 连接失败/中断后 channel() 会检测连接状态并自动重建，避免拿到已关闭的 channel 持续写失败；
  * 2. 未配置 forwardHost 时直接返回 null（不启用转发），调用方需判空；
- * 3. 注册最多重试 {@link #MAX_ATTEMPTS} 次，失败后停止自动重试（givenUp），防止反复同步建连阻塞主进程；
+ * 3. 注册最多重试 {@link #getMaxAttempts()} 次（默认 {@link #MAX_ATTEMPTS}，yml forward.maxRetry 可配），
+ *    失败后停止自动重试（givenUp），防止反复同步建连阻塞主进程；
  *    运行中可通过 forward 管理员命令 resetAndRetry() 重置计数并重新注册。
  */
 @Slf4j
 public class ForwardClient {
 
     /**
-     * 注册重试上限（次）
+     * 注册重试上限默认值（次），yml forward.maxRetry 未配置时使用
      */
     public static final int MAX_ATTEMPTS = 3;
 
     /**
-     * 单次建连超时（毫秒），避免同步 connect 长时间卡住调用线程
+     * 单次建连超时默认值（毫秒），yml forward.timeout 未配置时使用
      */
     private static final int CONNECT_TIMEOUT_MILLIS = 3000;
+
+    /**
+     * 实际重试上限：yml forward.maxRetry 未配置/非法时回落默认 {@link #MAX_ATTEMPTS}
+     */
+    public static int getMaxAttempts() {
+        ServerConfig config = ServerConfig.getConfig();
+        Integer value = config == null ? null : config.getForwardMaxRetry();
+        return value == null || value <= 0 ? MAX_ATTEMPTS : value;
+    }
+
+    /**
+     * 实际建连超时：yml forward.timeout 未配置/非法时回落默认 {@link #CONNECT_TIMEOUT_MILLIS}
+     */
+    public static int getConnectTimeoutMillis() {
+        ServerConfig config = ServerConfig.getConfig();
+        Integer value = config == null ? null : config.getForwardTimeout();
+        return value == null || value <= 0 ? CONNECT_TIMEOUT_MILLIS : value;
+    }
 
     private static volatile Channel channel;
 
@@ -92,7 +111,7 @@ public class ForwardClient {
     }
 
     /**
-     * 是否已放弃自动重试（连续 {@link #MAX_ATTEMPTS} 次注册失败）
+     * 是否已放弃自动重试（连续 {@link #getMaxAttempts()} 次注册失败）
      */
     public static boolean hasGivenUp() {
         return givenUp;

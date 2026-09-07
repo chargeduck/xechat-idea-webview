@@ -15,7 +15,6 @@ import cn.xeblog.server.cache.UserCache;
 import cn.xeblog.server.config.GlobalConfig;
 import cn.xeblog.server.config.ServerConfig;
 import cn.xeblog.server.forward.client.ForwardClient;
-import cn.xeblog.server.forward.utils.XeServerUtils;
 
 import java.util.Arrays;
 
@@ -145,8 +144,7 @@ public class AdminReactHandler extends AbstractReactHandler<AdminReact, AdminRea
             return;
         }
 
-        // 探测接入名（后台）后重置失败计数并立即注册
-        XeServerUtils.refreshDetectAsync();
+        // 接入名取 yml 配置；未配置由 hub 探测/兜底。重置失败计数并立即注册
         boolean ok = ForwardClient.resetAndRetry();
         ChannelAction.send(ResponseBuilder.system(ok
                 ? StrUtil.format("forward 注册成功：{}:{}", config.getForwardHost(), config.getForwardPort())

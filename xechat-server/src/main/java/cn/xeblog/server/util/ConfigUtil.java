@@ -58,7 +58,8 @@ public class ConfigUtil {
         final String fileForwardHost = resolvePlaceholders(getString(cfg, "forward.host"));
         final String fileForwardPort = resolvePlaceholders(getString(cfg, "forward.port"));
         final String fileServerName = resolvePlaceholders(getString(cfg, "forward.serverName"));
-        final String filePublicIp = resolvePlaceholders(getString(cfg, "server.publicIp"));
+        final String fileForwardMaxRetry = resolvePlaceholders(getString(cfg, "forward.maxRetry"));
+        final String fileForwardTimeout = resolvePlaceholders(getString(cfg, "forward.timeout"));
 
         return ServerConfig.builder()
                 .port(Convert.toInt(StrUtil.blankToDefault(configPort, fileConfigPort), 1024))
@@ -72,7 +73,8 @@ public class ConfigUtil {
                 .forwardHost(StrUtil.blankToDefault(forwardHost, fileForwardHost))
                 .forwardPort(Convert.toInt(StrUtil.blankToDefault(forwardPort, fileForwardPort), 9527))
                 .serverName(StrUtil.blankToDefault(serverName, fileServerName))
-                .publicIp(filePublicIp)
+                .forwardMaxRetry(Convert.toInt(StrUtil.blankToDefault(fileForwardMaxRetry, null), null))
+                .forwardTimeout(Convert.toInt(StrUtil.blankToDefault(fileForwardTimeout, null), null))
                 .build();
     }
 

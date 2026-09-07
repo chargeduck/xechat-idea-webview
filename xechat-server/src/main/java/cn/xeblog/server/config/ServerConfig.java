@@ -16,6 +16,7 @@ public class ServerConfig {
     /**
      * 端口
      */
+    @Getter
     private Integer port;
 
     /**
@@ -61,19 +62,25 @@ public class ServerConfig {
     /**
      * 转发服务器（hub）port
      */
+    @Getter
     private Integer forwardPort;
 
     /**
-     * 本服务器接入名（展示用，可为空由 hub 分配）
+     * 本服务器接入名（展示用，可为空由 hub 探测或按接入顺序分配）
      */
     private String serverName;
 
     /**
-     * 本服务公网 IP / 域名（可选，用于按公网 IP 比对 /api/server/list 探测接入名；
-     * 未配置时自动请求公网 IP 回显服务探测）
+     * 注册重试上限（次），未配置默认 3（yml: forward.maxRetry）
      */
-    private String publicIp;
+    private Integer forwardMaxRetry;
 
+    /**
+     * 单次建连超时（毫秒），未配置默认 3000（yml: forward.timeout）
+     */
+    private Integer forwardTimeout;
+
+    @Setter
     private static ServerConfig serverConfig;
 
     public static ServerConfig getConfig() {
@@ -82,14 +89,6 @@ public class ServerConfig {
         }
 
         return serverConfig;
-    }
-
-    public static void setServerConfig(ServerConfig config) {
-        serverConfig = config;
-    }
-
-    public Integer getPort() {
-        return port;
     }
 
     public String getSensitiveWordPath() {
@@ -124,15 +123,15 @@ public class ServerConfig {
         return StrUtil.equals("${FORWARD_HOST}", forwardHost) ? null : forwardHost;
     }
 
-    public Integer getForwardPort() {
-        return forwardPort;
-    }
-
     public String getServerName() {
         return StrUtil.equals("${SERVER_NAME}", serverName) ? null : serverName;
     }
 
-    public String getPublicIp() {
-        return StrUtil.equals("${PUBLIC_IP}", publicIp) ? null : publicIp;
+    public Integer getForwardMaxRetry() {
+        return forwardMaxRetry;
+    }
+
+    public Integer getForwardTimeout() {
+        return forwardTimeout;
     }
 }
