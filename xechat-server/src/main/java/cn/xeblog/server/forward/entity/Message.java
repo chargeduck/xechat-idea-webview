@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 转发/聚合帧实体（协议与 xechat-forward-match-lobby 完全兼容）
@@ -37,5 +38,13 @@ public class Message implements Serializable {
     private User user;
 
     private Object data;
+
+    /**
+     * 在线用户聚合列表（ONLINE_USERS 快照上报/聚合 reply、SERVER_OFFLINE 携带的断塘用户列表）
+     * <p>
+     * 说明：两侧固定 JSON 序列化，data(Object) 内嵌 User/List 会被 Gson 还原为 Map，
+     * 因此单用户走 {@link #user} 字段、列表走本字段，data 仅保留字符串/无类型载荷。
+     */
+    private List<User> users;
 
 }

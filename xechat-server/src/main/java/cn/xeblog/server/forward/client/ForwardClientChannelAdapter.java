@@ -1,11 +1,13 @@
 package cn.xeblog.server.forward.client;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.xeblog.commons.entity.LoginDTO;
 import cn.xeblog.commons.entity.Request;
 import cn.xeblog.commons.entity.User;
 import cn.xeblog.commons.entity.UserMsgDTO;
+import cn.xeblog.commons.entity.UserStateMsgDTO;
 import cn.xeblog.commons.enums.Action;
 import cn.xeblog.server.forward.entity.Message;
 import cn.xeblog.server.forward.entity.XeServerInfo;
@@ -14,12 +16,15 @@ import cn.xeblog.server.forward.utils.MessageBuilder;
 import cn.xeblog.server.action.ChannelAction;
 import cn.xeblog.server.builder.ResponseBuilder;
 import cn.xeblog.server.cache.ForwardCache;
+import cn.xeblog.server.cache.ForwardUserCache;
+import cn.xeblog.server.cache.UserCache;
 import cn.xeblog.server.forward.utils.XeServerUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,6 +52,8 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             }
             String serverOnlineMsg = StrUtil.format("{} 上线了", serverName);
             ChannelAction.send(ResponseBuilder.system(serverOnlineMsg));
+            // 注册/重连成功：向 hub 上报本塘全量在线快照，触发 hub 侧 diff 与外塘聚合 reply
+            channelHandlerContext.writeAndFlush(MessageBuilder.onlineUsersMessage(XeServerUtils.getDisplayServerName(), UserCache.listUser()));
         }
         if (messageType == MessageType.MESSAGE) {
             // 不是本服务的消息才转发
@@ -74,16 +81,51 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             }
         }
 
+        if (messageType == MessageType.USER_ONLINE) {
+            // hub 广播其他鱼塘用户上线：入外塘视图并广播上线状态（外塘用户绝不写本塘 UserCache）
+            User extUser = message.getUser();
+            if (extUser == null) {
+                return;
+            }
+            ForwardUserCache.addUser(extUser);
+            ChannelAction.sendUserState(extUser, UserStateMsgDTO.State.ONLINE);
+        }
+
         if (messageType == MessageType.USER_OFFLINE) {
-            // hub 原样转发 USER_OFFLINE，data 为下线的用户名
-            String username = message.getData() == null ? "未知" : String.valueOf(message.getData());
+            // hub 广播其他鱼塘用户下线：user 帧按 uuid 精确移除；老帧 data=username 走 username 兼容
+            User offUser = message.getUser();
+            if (offUser != null) {
+                ForwardUserCache.removeByUuid(offUser.getUuid());
+                ChannelAction.sendUserState(offUser, UserStateMsgDTO.State.OFFLINE);
+            } else if (message.getData() != null) {
+                ForwardUserCache.removeByUsername(String.valueOf(message.getData()));
+            }
+            String username = offUser == null ? "未知" : offUser.getUsername();
             ChannelAction.send(ResponseBuilder.system(StrUtil.format("【{}】 用户 [{}] 下线了", serverName, username)));
+        }
+
+        if (messageType == MessageType.ONLINE_USERS) {
+            // hub 聚合 reply：整表替换外塘视图后向本塘客户端合并广播在线列表（本塘 + 外塘）
+            List<User> extUsers = message.getUsers();
+            if (extUsers == null) {
+                return;
+            }
+            ForwardUserCache.resetAll(extUsers);
+            ChannelAction.sendOnlineUsers();
         }
 
         if (messageType == MessageType.SERVER_ONLINE) {
             ChannelAction.send(ResponseBuilder.system(StrUtil.format("【{}】 已连接至转发服务器", serverName)));
         }
         if (messageType == MessageType.SERVER_OFFLINE) {
+            // 断塘广播可能携带该塘在线用户列表：逐条剔除外塘视图并广播下线状态
+            List<User> offlineUsers = message.getUsers();
+            if (CollectionUtil.isNotEmpty(offlineUsers)) {
+                offlineUsers.forEach(offUser -> {
+                    ForwardUserCache.removeByUuid(offUser.getUuid());
+                    ChannelAction.sendUserState(offUser, UserStateMsgDTO.State.OFFLINE);
+                });
+            }
             ChannelAction.send(ResponseBuilder.system(StrUtil.format("【{}】 已从转发服务器断开连接", serverName)));
         }
         if (messageType == MessageType.FORWARD_SERVER_LIST) {

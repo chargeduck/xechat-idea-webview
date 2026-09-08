@@ -5,6 +5,7 @@ import cn.xeblog.commons.entity.game.GameRoom;
 import cn.xeblog.commons.entity.game.GameRoomMsgDTO;
 import cn.xeblog.server.builder.ResponseBuilder;
 import cn.xeblog.server.cache.GameRoomCache;
+import cn.xeblog.server.cache.ForwardUserCache;
 import cn.xeblog.server.cache.UserCache;
 import cn.xeblog.commons.enums.MessageType;
 import cn.xeblog.server.factory.ObjectFactory;
@@ -15,6 +16,9 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author anlingyi
@@ -61,7 +65,10 @@ public class ChannelAction {
     }
 
     public static void sendOnlineUsers(User user) {
-        Response response = ResponseBuilder.build(null, new UserListMsgDTO(UserCache.listUser()), MessageType.ONLINE_USERS);
+        List<User> all = new ArrayList<>(UserCache.listUser());
+        // 合并 forward hub 回灌的外塘在线用户（短地区已带“源塘名 -> ”前缀，channel 为 null）
+        all.addAll(ForwardUserCache.listUser());
+        Response response = ResponseBuilder.build(null, new UserListMsgDTO(all), MessageType.ONLINE_USERS);
         if (user == null) {
             send(response);
         } else {

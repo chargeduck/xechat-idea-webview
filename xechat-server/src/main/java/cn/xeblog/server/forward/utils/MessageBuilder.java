@@ -4,6 +4,8 @@ import cn.xeblog.commons.entity.User;
 import cn.xeblog.server.forward.entity.Message;
 import cn.xeblog.server.forward.enums.MessageType;
 
+import java.util.List;
+
 /**
  * 帧构造器（server 侧上行上报所需子集）
  * <p>
@@ -45,5 +47,35 @@ public class MessageBuilder {
                 .setMessageType(MessageType.USER_OFFLINE)
                 .setServerName(serverName)
                 .setData(username);
+    }
+
+    /**
+     * 用户下线上报（升级：user 放 user 字段，供 hub 按 uuid 精确剔除路由表）
+     */
+    public static Message userOfflineMessage(String serverName, User user) {
+        return new Message()
+                .setMessageType(MessageType.USER_OFFLINE)
+                .setServerName(serverName)
+                .setUser(user);
+    }
+
+    /**
+     * 用户上线增量上报（user 放 user 字段，上行本塘原始用户对象）
+     */
+    public static Message userOnlineMessage(String serverName, User user) {
+        return new Message()
+                .setMessageType(MessageType.USER_ONLINE)
+                .setServerName(serverName)
+                .setUser(user);
+    }
+
+    /**
+     * 全量在线快照上报（server 注册/重连成功后上行本塘全部在线用户，列表走 users 字段）
+     */
+    public static Message onlineUsersMessage(String serverName, List<User> users) {
+        return new Message()
+                .setMessageType(MessageType.ONLINE_USERS)
+                .setServerName(serverName)
+                .setUsers(users);
     }
 }

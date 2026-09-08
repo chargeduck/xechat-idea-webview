@@ -19,9 +19,13 @@ import cn.xeblog.server.config.GlobalConfig;
 import cn.xeblog.server.config.ServerConfig;
 import cn.xeblog.server.constant.CommonConstants;
 import cn.xeblog.server.factory.ObjectFactory;
+import cn.xeblog.server.forward.client.ForwardClient;
+import cn.xeblog.server.forward.utils.MessageBuilder;
+import cn.xeblog.server.forward.utils.XeServerUtils;
 import cn.xeblog.server.service.AbstractResponseHistoryService;
 import cn.xeblog.server.util.IpUtil;
 import cn.xeblog.server.util.SensitiveWordUtils;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -129,6 +133,12 @@ public class LoginActionHandler implements ActionHandler<LoginDTO> {
         ChannelAction.add(ctx.channel());
         ChannelAction.sendOnlineUsers(user);
         ChannelAction.sendUserState(user, UserStateMsgDTO.State.ONLINE);
+
+        // 登录成功，向 forward hub 上报用户上线增量（用于跨塘在线聚合）
+        Channel forwardChannel = ForwardClient.channel();
+        if (forwardChannel != null) {
+            forwardChannel.writeAndFlush(MessageBuilder.userOnlineMessage(XeServerUtils.getDisplayServerName(), user));
+        }
 
         if (isReconnect) {
             user.send(ResponseBuilder.system("重新连接服务器成功！"));

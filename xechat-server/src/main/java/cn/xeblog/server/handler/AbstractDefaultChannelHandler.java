@@ -36,7 +36,8 @@ public abstract class AbstractDefaultChannelHandler<T> extends SimpleChannelInbo
         if (user != null) {
             Channel forwardChannel = ForwardClient.channel();
             if (forwardChannel != null) {
-                forwardChannel.writeAndFlush(MessageBuilder.userOfflineMessage(XeServerUtils.getDisplayServerName(), user.getUsername()));
+                // 携带完整 User（uuid），供 hub 精确剔除路由表并转发给其他鱼塘
+                forwardChannel.writeAndFlush(MessageBuilder.userOfflineMessage(XeServerUtils.getDisplayServerName(), user));
             }
         }
     }

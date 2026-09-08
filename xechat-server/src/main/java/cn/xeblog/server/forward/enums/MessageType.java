@@ -30,6 +30,14 @@ public enum MessageType {
      */
     USER_OFFLINE,
     /**
+     * 用户上线（user 字段携带用户对象）
+     */
+    USER_ONLINE,
+    /**
+     * 全量在线用户列表（快照上报 / hub 聚合 reply，users 字段携带）
+     */
+    ONLINE_USERS,
+    /**
      * 服务器下线
      */
     SERVER_OFFLINE,
