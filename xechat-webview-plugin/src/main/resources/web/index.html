@@ -944,14 +944,14 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   font-size: 13px;
 }
 
-.online-users-panel[data-v-61f6bf2c] {\r
+.online-users-panel[data-v-38d86fff] {\r
   height: 100%;\r
   display: flex;\r
   flex-direction: column;\r
   background: var(--bg-primary);\r
   padding: 12px;
 }
-.panel-header[data-v-61f6bf2c] {\r
+.panel-header[data-v-38d86fff] {\r
   display: flex;\r
   align-items: center;\r
   justify-content: space-between;\r
@@ -961,12 +961,31 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   font-weight: 500;\r
   color: var(--text-primary);
 }
-.user-list[data-v-61f6bf2c] {\r
+.user-list[data-v-38d86fff] {\r
   flex: 1;\r
   overflow-y: auto;\r
   padding-top: 8px;
 }
-.user-item[data-v-61f6bf2c] {\r
+.user-group + .user-group[data-v-38d86fff] {\r
+  margin-top: 4px;
+}
+.group-header[data-v-38d86fff] {\r
+  display: flex;\r
+  align-items: center;\r
+  justify-content: space-between;\r
+  padding: 4px 4px 2px;\r
+  font-size: 12px;\r
+  font-weight: 600;\r
+  color: var(--text-secondary);
+}
+.group-header .el-tag[data-v-38d86fff] {\r
+  height: 18px;\r
+  line-height: 16px;
+}
+.user-group .user-item[data-v-38d86fff]:last-child {\r
+  border-bottom: none;
+}
+.user-item[data-v-38d86fff] {\r
   display: flex;\r
   align-items: center;\r
   gap: 6px;\r
@@ -975,21 +994,21 @@ var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")])
   color: var(--text-primary);\r
   border-bottom: 1px solid var(--border-color-light, rgba(128, 128, 128, 0.1));
 }
-.user-status-icon[data-v-61f6bf2c] {\r
+.user-status-icon[data-v-38d86fff] {\r
   font-size: 14px;
 }
-.user-name[data-v-61f6bf2c] {\r
+.user-name[data-v-38d86fff] {\r
   font-weight: 500;
 }
-.user-region[data-v-61f6bf2c] {\r
+.user-region[data-v-38d86fff] {\r
   color: var(--text-secondary);\r
   font-size: 12px;
 }
-.user-platform[data-v-61f6bf2c] {\r
+.user-platform[data-v-38d86fff] {\r
   margin-left: auto;\r
   font-size: 13px;
 }
-.empty-hint[data-v-61f6bf2c] {\r
+.empty-hint[data-v-38d86fff] {\r
   flex: 1;\r
   display: flex;\r
   align-items: center;\r
@@ -43392,7 +43411,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   const _hoisted_6$c = ["tabindex", "aria-disabled"];
   const _hoisted_7$b = ["tabindex", "aria-disabled"];
   const _hoisted_8$a = ["disabled", "aria-label"];
-  const _hoisted_9$8 = ["disabled", "aria-label"];
+  const _hoisted_9$9 = ["disabled", "aria-label"];
   const _hoisted_10$6 = ["aria-label", "disabled"];
   const _hoisted_11$6 = ["disabled", "aria-label"];
   const _hoisted_12$4 = ["tabindex", "aria-disabled"];
@@ -43963,7 +43982,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
                 }, [renderSlot(_ctx.$slots, "prev-month", {}, () => [createVNode(unref(ElIcon), null, {
                   default: withCtx(() => [createVNode(unref(arrow_left_default))]),
                   _: 1
-                })])], 10, _hoisted_9$8)) : createCommentVNode("v-if", true),
+                })])], 10, _hoisted_9$9)) : createCommentVNode("v-if", true),
                 createBaseVNode("button", {
                   type: "button",
                   "aria-label": unref(t)(`el.datepicker.nextYear`),
@@ -47248,7 +47267,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   const _hoisted_6$b = ["stop-color"];
   const _hoisted_7$a = ["stop-color"];
   const _hoisted_8$9 = ["id"];
-  const _hoisted_9$7 = {
+  const _hoisted_9$8 = {
     stroke: "none",
     "stroke-width": "1",
     fill: "none",
@@ -47309,7 +47328,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
             width: "17",
             height: "36"
           }, null, 8, _hoisted_8$9)
-        ]), createBaseVNode("g", _hoisted_9$7, [createBaseVNode("g", _hoisted_10$5, [createBaseVNode("g", _hoisted_11$5, [
+        ]), createBaseVNode("g", _hoisted_9$8, [createBaseVNode("g", _hoisted_10$5, [createBaseVNode("g", _hoisted_11$5, [
           createBaseVNode("path", {
             d: "M39.5,86 C61.3152476,86 79,83.9106622 79,81.3333333 C79,78.7560045 57.3152476,78 35.5,78 C13.6847524,78 0,78.7560045 0,81.3333333 C0,83.9106622 17.6847524,86 39.5,86 Z",
             fill: `var(${unref(ns).cssVarBlockName("fill-color-3")})`
@@ -73557,6 +73576,13 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     if (typeof region !== "string") return "";
     return region.split("->").map((s2) => (s2 || "").trim()).filter((s2) => s2 && s2.toLowerCase() !== "null").join(" -> ");
   }
+  function splitRegion(region) {
+    const cleaned = cleanShortRegion(region);
+    if (!cleaned) return { pond: "", region: "" };
+    const idx = cleaned.indexOf(" -> ");
+    if (idx < 0) return { pond: "", region: cleaned };
+    return { pond: cleaned.slice(0, idx), region: cleaned.slice(idx + 4) };
+  }
   function stripSystemNullTag(text2) {
     if (typeof text2 !== "string") return text2 || "";
     return text2.replace(/[\[【]([^\]】]*)[\]】]/g, (whole, inner) => {
@@ -73580,26 +73606,28 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
       }
     },
     actions: {
+      /** 统一归一化单条在线用户：清洗地区 + 拆分源塘前缀 */
+      _normalize(user) {
+        const shortRegion = cleanShortRegion(user.shortRegion);
+        const { pond, region } = splitRegion(shortRegion);
+        return {
+          uuid: user.uuid || "",
+          username: user.username || "",
+          status: user.status || "",
+          platform: user.platform || "",
+          shortRegion,
+          pond,
+          displayRegion: region
+        };
+      },
       /** 全量替换用户列表（ONLINE_USERS） */
       setUsers(userList) {
-        this.users = (userList || []).map((u2) => ({
-          uuid: u2.uuid || "",
-          username: u2.username || "",
-          status: u2.status || "",
-          platform: u2.platform || "",
-          shortRegion: cleanShortRegion(u2.shortRegion)
-        }));
+        this.users = (userList || []).map((u2) => this._normalize(u2));
       },
       /** 添加或更新一个用户（USER_STATE） */
       upsertUser(user) {
         if (!user || !user.username) return;
-        const entry = {
-          uuid: user.uuid || "",
-          username: user.username,
-          status: user.status || "",
-          platform: user.platform || "",
-          shortRegion: cleanShortRegion(user.shortRegion)
-        };
+        const entry = this._normalize(user);
         const idx = this.users.findIndex((u2) => u2.username === entry.username);
         if (idx >= 0) {
           this.users[idx] = entry;
@@ -82442,7 +82470,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     class: "markdown-image-expanded"
   };
   const _hoisted_8$8 = ["innerHTML"];
-  const _hoisted_9$6 = ["innerHTML"];
+  const _hoisted_9$7 = ["innerHTML"];
   const _sfc_main$b = {
     __name: "MarkdownMessage",
     props: {
@@ -82788,7 +82816,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
           class: "markdown-body message-markdown",
           innerHTML: renderedHtml.value,
           onClick: onContentClick
-        }, null, 8, _hoisted_9$6));
+        }, null, 8, _hoisted_9$7));
       };
     }
   };
@@ -82930,7 +82958,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   };
   const _hoisted_7$8 = { class: "scroll-float" };
   const _hoisted_8$7 = { class: "input-area" };
-  const _hoisted_9$5 = {
+  const _hoisted_9$6 = {
     key: 0,
     class: "at-panel"
   };
@@ -83470,7 +83498,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
             })) : createCommentVNode("", true)
           ]),
           createBaseVNode("div", _hoisted_8$7, [
-            atPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_9$5, [
+            atPanelVisible.value ? (openBlock(), createElementBlock("div", _hoisted_9$6, [
               atFilteredUsers.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_10$4, "无匹配用户")) : createCommentVNode("", true),
               (openBlock(true), createElementBlock(Fragment, null, renderList(atFilteredUsers.value, (u2, i) => {
                 return openBlock(), createElementBlock("div", {
@@ -87092,7 +87120,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     class: "error-msg"
   };
   const _hoisted_8$6 = ["disabled"];
-  const _hoisted_9$4 = { class: "switch-row" };
+  const _hoisted_9$5 = { class: "switch-row" };
   const _sfc_main$7 = {
     __name: "GameLogin",
     emits: ["success"],
@@ -87183,7 +87211,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
               onClick: handleSubmit
             }, toDisplayString(loading.value ? "处理中..." : mode.value === "login" ? "登 录" : "注 册"), 9, _hoisted_8$6)
           ]),
-          createBaseVNode("div", _hoisted_9$4, [
+          createBaseVNode("div", _hoisted_9$5, [
             createBaseVNode("span", null, toDisplayString(mode.value === "login" ? "还没有账号？" : "已有账号？"), 1),
             createBaseVNode("a", {
               class: "switch-link",
@@ -87238,7 +87266,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     key: 1,
     class: "icon-placeholder"
   };
-  const _hoisted_9$3 = { class: "game-name" };
+  const _hoisted_9$4 = { class: "game-name" };
   const _hoisted_10$3 = {
     key: 0,
     class: "game-desc"
@@ -87338,7 +87366,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
                     alt: "游戏图标"
                   }, null, 8, _hoisted_7$5)) : (openBlock(), createElementBlock("span", _hoisted_8$5, toDisplayString(placeholderText(game)), 1))
                 ], 4),
-                createBaseVNode("div", _hoisted_9$3, toDisplayString(game.gameNameZhCn || game.gameName || "-"), 1),
+                createBaseVNode("div", _hoisted_9$4, toDisplayString(game.gameNameZhCn || game.gameName || "-"), 1),
                 game.description ? (openBlock(), createElementBlock("div", _hoisted_10$3, toDisplayString(game.description), 1)) : createCommentVNode("", true),
                 createBaseVNode("button", {
                   class: "play-btn",
@@ -87367,7 +87395,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
   const _hoisted_6$4 = { class: "player-bar" };
   const _hoisted_7$4 = { class: "player-title" };
   const _hoisted_8$4 = { class: "bar-actions" };
-  const _hoisted_9$2 = { class: "opacity-control" };
+  const _hoisted_9$3 = { class: "opacity-control" };
   const _hoisted_10$2 = { class: "player-body" };
   const _hoisted_11$2 = ["src"];
   const _sfc_main$5 = {
@@ -87438,7 +87466,7 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
               createBaseVNode("div", _hoisted_6$4, [
                 createBaseVNode("span", _hoisted_7$4, toDisplayString(playingGame.value.gameNameZhCn || playingGame.value.gameName), 1),
                 createBaseVNode("div", _hoisted_8$4, [
-                  createBaseVNode("div", _hoisted_9$2, [
+                  createBaseVNode("div", _hoisted_9$3, [
                     createVNode(_component_el_slider, {
                       modelValue: panelOpacity.value,
                       "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => panelOpacity.value = $event),
@@ -87566,14 +87594,15 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     key: 0,
     class: "user-list"
   };
-  const _hoisted_4$3 = { class: "user-status-icon" };
-  const _hoisted_5$3 = { class: "user-name" };
-  const _hoisted_6$2 = {
+  const _hoisted_4$3 = { class: "group-header" };
+  const _hoisted_5$3 = { class: "user-status-icon" };
+  const _hoisted_6$2 = { class: "user-name" };
+  const _hoisted_7$2 = {
     key: 0,
     class: "user-region"
   };
-  const _hoisted_7$2 = { class: "user-platform" };
-  const _hoisted_8$2 = {
+  const _hoisted_8$2 = { class: "user-platform" };
+  const _hoisted_9$2 = {
     key: 1,
     class: "empty-hint"
   };
@@ -87581,6 +87610,21 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
     __name: "OnlineUsersPanel",
     setup(__props) {
       const onlineStore = useOnlineUsersStore();
+      const groups = computed(() => {
+        const map2 = /* @__PURE__ */ new Map();
+        for (const u2 of onlineStore.users) {
+          const key = u2.pond || "";
+          if (!map2.has(key)) {
+            map2.set(key, { key, label: key || "本塘", users: [] });
+          }
+          map2.get(key).users.push(u2);
+        }
+        return [...map2.values()].sort((a2, b2) => {
+          if (!a2.key) return -1;
+          if (!b2.key) return 1;
+          return a2.key.localeCompare(b2.key, "zh");
+        });
+      });
       function statusIcon(s2) {
         switch (s2) {
           case "FISHING":
@@ -87620,23 +87664,43 @@ usage: app.provide(ZINDEX_INJECTION_KEY, { current: 0 })`);
             })
           ]),
           unref(onlineStore).users.length ? (openBlock(), createElementBlock("div", _hoisted_3$3, [
-            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(onlineStore).users, (u2) => {
+            (openBlock(true), createElementBlock(Fragment, null, renderList(groups.value, (g) => {
               return openBlock(), createElementBlock("div", {
-                key: u2.username,
-                class: "user-item"
+                key: g.key,
+                class: "user-group"
               }, [
-                createBaseVNode("span", _hoisted_4$3, toDisplayString(statusIcon(u2.status)), 1),
-                createBaseVNode("span", _hoisted_5$3, toDisplayString(u2.username), 1),
-                u2.shortRegion ? (openBlock(), createElementBlock("span", _hoisted_6$2, "[" + toDisplayString(u2.shortRegion) + "]", 1)) : createCommentVNode("", true),
-                createBaseVNode("span", _hoisted_7$2, toDisplayString(platformIcon(u2.platform)), 1)
+                createBaseVNode("div", _hoisted_4$3, [
+                  createBaseVNode("span", null, toDisplayString(g.label), 1),
+                  createVNode(_component_el_tag, {
+                    size: "small",
+                    type: "info",
+                    effect: "plain"
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(toDisplayString(g.users.length), 1)
+                    ]),
+                    _: 2
+                  }, 1024)
+                ]),
+                (openBlock(true), createElementBlock(Fragment, null, renderList(g.users, (u2) => {
+                  return openBlock(), createElementBlock("div", {
+                    key: u2.username,
+                    class: "user-item"
+                  }, [
+                    createBaseVNode("span", _hoisted_5$3, toDisplayString(statusIcon(u2.status)), 1),
+                    createBaseVNode("span", _hoisted_6$2, toDisplayString(u2.username), 1),
+                    u2.displayRegion ? (openBlock(), createElementBlock("span", _hoisted_7$2, "[" + toDisplayString(u2.displayRegion) + "]", 1)) : createCommentVNode("", true),
+                    createBaseVNode("span", _hoisted_8$2, toDisplayString(platformIcon(u2.platform)), 1)
+                  ]);
+                }), 128))
               ]);
             }), 128))
-          ])) : (openBlock(), createElementBlock("div", _hoisted_8$2, "暂无在线用户"))
+          ])) : (openBlock(), createElementBlock("div", _hoisted_9$2, "暂无在线用户"))
         ]);
       };
     }
   };
-  const OnlineUsersPanel = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-61f6bf2c"]]);
+  const OnlineUsersPanel = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-38d86fff"]]);
   const _hoisted_1$2 = { class: "style-editor" };
   const _hoisted_2$2 = { class: "editor-header" };
   const _hoisted_3$2 = { class: "header-left" };

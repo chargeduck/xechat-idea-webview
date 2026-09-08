@@ -53,7 +53,10 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             String serverOnlineMsg = StrUtil.format("{} 上线了", serverName);
             ChannelAction.send(ResponseBuilder.system(serverOnlineMsg));
             // 注册/重连成功：向 hub 上报本塘全量在线快照，触发 hub 侧 diff 与外塘聚合 reply
-            channelHandlerContext.writeAndFlush(MessageBuilder.onlineUsersMessage(XeServerUtils.getDisplayServerName(), UserCache.listUser()));
+            List<User> localSnapshot = UserCache.listUser();
+            log.info("[塘转] 收到 SEQUENCE_ID 注册成功: seq={}, channelId={}, 本塘在线 {} 人, 上行全量快照 ONLINE_USERS -> hub",
+                    message.getSequenceId(), message.getId(), localSnapshot.size());
+            channelHandlerContext.writeAndFlush(MessageBuilder.onlineUsersMessage(XeServerUtils.getDisplayServerName(), localSnapshot));
         }
         if (messageType == MessageType.MESSAGE) {
             // 不是本服务的消息才转发
@@ -85,8 +88,11 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             // hub 广播其他鱼塘用户上线：入外塘视图并广播上线状态（外塘用户绝不写本塘 UserCache）
             User extUser = message.getUser();
             if (extUser == null) {
+                log.warn("[塘转] 下行 USER_ONLINE 丢弃: 帧内 user 为空, server={}", serverName);
                 return;
             }
+            log.info("[塘转] 下行 USER_ONLINE 他塘用户上线: server={}, user={}, uuid={}",
+                    serverName, extUser.getUsername(), extUser.getUuid());
             ForwardUserCache.addUser(extUser);
             ChannelAction.sendUserState(extUser, UserStateMsgDTO.State.ONLINE);
         }
@@ -95,9 +101,12 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             // hub 广播其他鱼塘用户下线：user 帧按 uuid 精确移除；老帧 data=username 走 username 兼容
             User offUser = message.getUser();
             if (offUser != null) {
+                log.info("[塘转] 下行 USER_OFFLINE 他塘用户下线: server={}, user={}, uuid={}",
+                        serverName, offUser.getUsername(), offUser.getUuid());
                 ForwardUserCache.removeByUuid(offUser.getUuid());
                 ChannelAction.sendUserState(offUser, UserStateMsgDTO.State.OFFLINE);
             } else if (message.getData() != null) {
+                log.info("[塘转] 下行 USER_OFFLINE(老帧 username): server={}, data={}", serverName, message.getData());
                 ForwardUserCache.removeByUsername(String.valueOf(message.getData()));
             }
             String username = offUser == null ? "未知" : offUser.getUsername();
@@ -108,8 +117,10 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
             // hub 聚合 reply：整表替换外塘视图后向本塘客户端合并广播在线列表（本塘 + 外塘）
             List<User> extUsers = message.getUsers();
             if (extUsers == null) {
+                log.warn("[塘转] 下行 ONLINE_USERS 丢弃: users 字段为空");
                 return;
             }
+            log.info("[塘转] 下行 ONLINE_USERS hub 聚合 reply: 收到外塘 {} 人, 整表替换外塘视图", extUsers.size());
             ForwardUserCache.resetAll(extUsers);
             ChannelAction.sendOnlineUsers();
         }
@@ -120,6 +131,8 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
         if (messageType == MessageType.SERVER_OFFLINE) {
             // 断塘广播可能携带该塘在线用户列表：逐条剔除外塘视图并广播下线状态
             List<User> offlineUsers = message.getUsers();
+            log.info("[塘转] 下行 SERVER_OFFLINE: server={}, 携带断塘用户 {} 人", serverName,
+                    offlineUsers == null ? 0 : offlineUsers.size());
             if (CollectionUtil.isNotEmpty(offlineUsers)) {
                 offlineUsers.forEach(offUser -> {
                     ForwardUserCache.removeByUuid(offUser.getUuid());
@@ -154,6 +167,7 @@ public class ForwardClientChannelAdapter extends SimpleChannelInboundHandler<Mes
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        log.info("[塘转] ForwardClient 已连接 hub, 发送心跳注册, serverName={}", XeServerUtils.getDisplayServerName());
         ctx.writeAndFlush(MessageBuilder.heartbeat(null, 0, null, XeServerUtils.getServerInfoJsonStr()));
     }
 

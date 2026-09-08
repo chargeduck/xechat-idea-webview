@@ -65,9 +65,13 @@ public class ChannelAction {
     }
 
     public static void sendOnlineUsers(User user) {
-        List<User> all = new ArrayList<>(UserCache.listUser());
+        List<User> localUsers = UserCache.listUser();
+        List<User> extUsers = ForwardUserCache.listUser();
+        List<User> all = new ArrayList<>(localUsers);
         // 合并 forward hub 回灌的外塘在线用户（短地区已带“源塘名 -> ”前缀，channel 为 null）
-        all.addAll(ForwardUserCache.listUser());
+        all.addAll(extUsers);
+        log.info("[塘转] 下发 ONLINE_USERS 在线列表: 本塘={} 人, 外塘={} 人, 合并合计={} 人",
+                localUsers.size(), extUsers.size(), all.size());
         Response response = ResponseBuilder.build(null, new UserListMsgDTO(all), MessageType.ONLINE_USERS);
         if (user == null) {
             send(response);

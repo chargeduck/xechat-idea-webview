@@ -137,7 +137,11 @@ public class LoginActionHandler implements ActionHandler<LoginDTO> {
         // 登录成功，向 forward hub 上报用户上线增量（用于跨塘在线聚合）
         Channel forwardChannel = ForwardClient.channel();
         if (forwardChannel != null) {
+            log.info("[塘转] 上行 USER_ONLINE -> hub: serverName={}, user={}, uuid={}, platform={}",
+                    XeServerUtils.getDisplayServerName(), username, body.getUuid(), body.getPlatform());
             forwardChannel.writeAndFlush(MessageBuilder.userOnlineMessage(XeServerUtils.getDisplayServerName(), user));
+        } else {
+            log.warn("[塘转] 上行 USER_ONLINE 跳过: hub 连接未建立, user={}, uuid={}", username, body.getUuid());
         }
 
         if (isReconnect) {
